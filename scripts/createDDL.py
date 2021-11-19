@@ -3,8 +3,8 @@ import random
 import requests
 import urllib.parse
 import json
-# Book (ISBN, title, year, genre, page_count, price, commission, url, quantity, warehouse_ID, publisher_ID)
 from bs4 import BeautifulSoup
+
 # https://www.randomlists.com/random-addresses
 fake_addresses = [
     "8424 Ridge Court", "Gaspésie-Ouest, QC G0J 3T5", "9154 Tanglewood Court", "Owen Sound, ON N4K 2X1",
@@ -30,6 +30,7 @@ fake_addresses = [
     "Selkirk, MB R1A 9G4", "100 Pennington Drive", "Saint-Félicien, QC G8K 9L2"
 ]
 
+# https://randommer.io/random-email-address
 fake_emails = [
     "velda58@gmail.com", "jacky_ondricka@yahoo.com", "clarissa_king88@hotmail.com", "melvin_welch91@gmail.com",
     "chase.jenkins@hotmail.com",
@@ -45,21 +46,23 @@ fake_emails = [
     "marlon.dietrich@hotmail.com", "bradly70@yahoo.com"
 ]
 
-fopen = open('something.ddl', 'w')
+fopen = open('populate.ddl', 'w')
 
 
 def get_book_url(page: int = 1) -> str:
+    # gets a page of a goodreads list for a link (100 pages)
     return f"https://www.goodreads.com/list/show/7.Best_Books_of_the_21st_Century?page={page}"
 
 
 def clamp(value: float, min_clamp: float, max_clamp: float) -> float:
+    # clamps a value to a range of [min_clam, max_clamp]
     if value < min_clamp:
         return min_clamp
     if value > max_clamp:
         return max_clamp
     return value
 
-
+# Variables for this script
 publisher_key_map = {}
 init_publisher_key = 10000
 warehouse_key = 100000
@@ -67,7 +70,9 @@ author_key_map = {}
 init_author_key = 50000
 isbns = set()
 
+
 def get_publisher_key(publisher: str) -> int:
+    # gets the publisher key of an publisher string, function creates a new key if it doesn't exist
     global init_publisher_key
     if publisher in publisher_key_map:
         return publisher_key_map[publisher]
@@ -78,6 +83,7 @@ def get_publisher_key(publisher: str) -> int:
 
 
 def get_author_key(author: str) -> int:
+    # gets the author key of a author string, function creates a new key if it doesn't exist
     global init_author_key
     if author in author_key_map:
         return author_key_map[author]
@@ -89,6 +95,8 @@ def get_author_key(author: str) -> int:
 
 bookTitles = []
 
+# First, from each page of the goodreads website, get a list of all the books mentioned in said title
+# to do this, we webscrape the website and grab only the book titles
 for page in range(1, 2):
     bookUrl = get_book_url(page)
     req = requests.get(bookUrl)
@@ -98,6 +106,7 @@ for page in range(1, 2):
 
 print(len(bookTitles))
 
+# ddl statements such that they are algined in the file output
 book_ddl = []
 written_by_ddl = []
 author_ddl = []
@@ -106,16 +115,20 @@ inst_phone_ddl = []
 
 
 for book in bookTitles:
+    # Use google book api to get data per a book
     res = requests.get(
         f'https://www.googleapis.com/books/v1/volumes?q={urllib.parse.quote(book)}&maxResults=1&printType=books'
         f'&filter=ebooks')
     data = json.loads(res.text)
     if len(data['items']) != 1:
         continue
+
+    # Types of book data the api provides
     json_data = data['items'][0]
     json_book = json_data['volumeInfo']
     json_sales = json_data['saleInfo']
-    
+
+    # Extract book related data
     isbn = ''
     for identifier in json_book['industryIdentifiers']:
         if identifier['type'] == 'ISBN_13' or identifier['type'] == 'ISBN_10':
@@ -138,23 +151,32 @@ for book in bookTitles:
 
     quantity = random.randint(10, 50)
 
+    # Extract sales related data
     price = json_sales['listPrice']['amount']
     commission = clamp((price - json_sales['retailPrice']['amount']) / 150, 0.01, 0.5)
+
+    # Create the ddl statements
     book_ddl.append(f"INSERT INTO book VALUES({isbn}, {title}, {year}, {genre}, {page_count}, {price}, {commission},"
                     f" {url}, {quantity}, {warehouse_key}, {get_publisher_key(publisher)});\n")
 
     for author in json_book['authors']:
         author_id = get_author_key(author)
+
         written_by_ddl.append(f"INSERT INTO written_by VALUES({isbn}, {author_id});\n")
 
+    # (for now), this makes the creation of ddls stop after ~20 books
     if book.__contains__('Angels & Demons'):
         break
 
+# Iterate over the author key map to populate the author table with it's key and name
 for author_key_pair in author_key_map.items():
     author_id = author_key_pair[1]
     name = author_key_pair[0]
+
     author_ddl.append(f"INSERT INTO author VALUES({author_id}, {name});\n")
 
+# Iterate over the publisher key map to populate the publisher table
+# We create random addresses, emails from lists already predefinied
 for publisher_key_pair in publisher_key_map.items():
     publisher_id = publisher_key_pair[1]
     name = publisher_key_pair[0]
@@ -162,9 +184,11 @@ for publisher_key_pair in publisher_key_map.items():
     email = random.choice(fake_emails)
     bank_number = random.randint(10000000, 99999999)
     phone_number = f"{random.randint(100, 999)}-{random.randint(100, 999)}-{random.randint(1000, 9999)}"
+
     publisher_ddl.append(f"INSERT INTO publisher VALUES({publisher_id}, {name}, {address}, {email}, {bank_number});\n")
     inst_phone_ddl.append(f"INSERT INTO inst_phone VALUES({publisher_id}, {phone_number});\n")
 
+# Output all ddls to the file
 for ddl in book_ddl:
     fopen.write(ddl)
 for ddl in written_by_ddl:
@@ -175,6 +199,6 @@ for ddl in publisher_ddl:
     fopen.write(ddl)
 for ddl in inst_phone_ddl:
     fopen.write(ddl)
-
 fopen.write(f"INSERT INTO warehouse VALUES({warehouse_key}, 457 East Ave. Northbrook IL 60062)")
+
 fopen.close()

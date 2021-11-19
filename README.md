@@ -5,6 +5,7 @@ Look Inna Book online bookstore application for COMP 3005 at Carleton University
 ## Authors
 - Eren Sulutas #101101873
 - Ben Li(bochen li) # 101113284
+- Joshua Challenger #101119396
 
 ## Instructions for Running
 

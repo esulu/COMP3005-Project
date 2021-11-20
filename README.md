@@ -9,10 +9,15 @@ Look Inna Book online bookstore application for COMP 3005 at Carleton University
 
 ## Instructions for Running
 
+TODO: update these when connection improvements are made 
+
 - Clone the repository
 - Download and install pgAdmin and postgresql 
 - Create a database named bookstore
 - Update the credentials in server/db.js to connect to your local database
+- cd into the `server` directory and use `npm install` and `node index` to start the db server
+- create a new terminal
+- cd to client and run `npm install` and `npm start`
 
 ## Tools
 

@@ -29,7 +29,7 @@ fake_addresses = [
     "7175 Arlington Street",
     "Selkirk, MB R1A 9G4", "100 Pennington Drive", "Saint-Félicien, QC G8K 9L2"
 ]
-
+"""
 # https://randommer.io/random-email-address
 fake_emails = [
     "velda58@gmail.com", "jacky_ondricka@yahoo.com", "clarissa_king88@hotmail.com", "melvin_welch91@gmail.com",
@@ -45,7 +45,8 @@ fake_emails = [
     "loren_mcdermott55@hotmail.com", "wendell39@hotmail.com", "adelia.oberbrunner@gmail.com", "granville93@yahoo.com",
     "marlon.dietrich@hotmail.com", "bradly70@yahoo.com"
 ]
-
+"""
+fake_emails = ["@gmail.com", "@yahoo.com", "@outlook.com"]
 fopen = open('populate.ddl', 'w')
 
 
@@ -113,6 +114,7 @@ author_ddl = []
 publisher_ddl = []
 inst_phone_ddl = []
 
+k = 0
 
 for book in bookTitles:
     # Use google book api to get data per a book
@@ -138,7 +140,7 @@ for book in bookTitles:
         isbn = random.randint(1000000000, 9999999999)
     isbns.add(isbn)
 
-    title = book
+    title = book.replace('\'',"\'\'")
     if '-' in json_book['publishedDate']:
         year = json_book['publishedDate'][:json_book['publishedDate'].find('-')]
     else:
@@ -156,24 +158,25 @@ for book in bookTitles:
     commission = clamp((price - json_sales['retailPrice']['amount']) / 150, 0.01, 0.5)
 
     # Create the ddl statements
-    book_ddl.append(f"INSERT INTO book VALUES({isbn}, {title}, {year}, {genre}, {page_count}, {price}, {commission},"
-                    f" {url}, {quantity}, {warehouse_key}, {get_publisher_key(publisher)});\n")
+    book_ddl.append(f"INSERT INTO book VALUES(\'{isbn}\', \'{title}\', {year}, \'{genre}\', {page_count}, {price}, {commission},"
+                    f" \'{url}\', {quantity}, {warehouse_key}, {get_publisher_key(publisher)});\n")
 
     for author in json_book['authors']:
         author_id = get_author_key(author)
 
-        written_by_ddl.append(f"INSERT INTO written_by VALUES({isbn}, {author_id});\n")
+        written_by_ddl.append(f"INSERT INTO written_by VALUES(\'{isbn}\', {author_id});\n")
 
     # (for now), this makes the creation of ddls stop after ~20 books
-    if book.__contains__('Angels & Demons'):
+    if k == 20:
         break
+    k += 1
 
 # Iterate over the author key map to populate the author table with it's key and name
 for author_key_pair in author_key_map.items():
     author_id = author_key_pair[1]
     name = author_key_pair[0]
 
-    author_ddl.append(f"INSERT INTO author VALUES({author_id}, {name});\n")
+    author_ddl.append(f"INSERT INTO author VALUES({author_id}, \'{name}\');\n")
 
 # Iterate over the publisher key map to populate the publisher table
 # We create random addresses, emails from lists already predefinied
@@ -181,24 +184,27 @@ for publisher_key_pair in publisher_key_map.items():
     publisher_id = publisher_key_pair[1]
     name = publisher_key_pair[0]
     address = random.choice(fake_addresses).replace(',', '')
-    email = random.choice(fake_emails)
+    email_ext = address.split(' ')[0]
+    if ',' in address:
+        email_ext = address[:address.find(',')]
+    email = f"{name.replace(' ', '')}.{email_ext}{random.choice(fake_emails)}"
     bank_number = random.randint(10000000, 99999999)
     phone_number = f"{random.randint(100, 999)}-{random.randint(100, 999)}-{random.randint(1000, 9999)}"
 
-    publisher_ddl.append(f"INSERT INTO publisher VALUES({publisher_id}, {name}, {address}, {email}, {bank_number});\n")
-    inst_phone_ddl.append(f"INSERT INTO inst_phone VALUES({publisher_id}, {phone_number});\n")
+    publisher_ddl.append(f"INSERT INTO publisher VALUES({publisher_id}, \'{name}\', \'{address}\', \'{email}\', \'{bank_number}\');\n")
+    inst_phone_ddl.append(f"INSERT INTO inst_phone VALUES({publisher_id}, \'{phone_number}\');\n")
 
 # Output all ddls to the file
-for ddl in book_ddl:
-    fopen.write(ddl)
-for ddl in written_by_ddl:
-    fopen.write(ddl)
-for ddl in author_ddl:
-    fopen.write(ddl)
+fopen.write(f"INSERT INTO warehouse VALUES({warehouse_key}, \'457 East Ave. Northbrook IL 60062\');\n")
 for ddl in publisher_ddl:
     fopen.write(ddl)
 for ddl in inst_phone_ddl:
     fopen.write(ddl)
-fopen.write(f"INSERT INTO warehouse VALUES({warehouse_key}, 457 East Ave. Northbrook IL 60062)")
+for ddl in author_ddl:
+    fopen.write(ddl)
+for ddl in book_ddl:
+    fopen.write(ddl)
+for ddl in written_by_ddl:
+    fopen.write(ddl)
 
 fopen.close()

@@ -10,12 +10,15 @@ Look Inna Book online bookstore application for COMP 3005 at Carleton University
 ## Instructions for Running
 
 - Clone the repository
-- Install [Node 12 LTS](https://nodejs.org/en/download/) or greater
-- Install the [Expo CLI](https://docs.expo.dev/workflow/expo-cli/)
-   - Use the following command: `npm install -g expo-cli`
-- In the project directory enter the `npm start` command to start the Metro Bundler
-- Click the 'Run in web browser' option, or alternatively enter 'w' in your terminal to start in web
+- Download and install pgAdmin and postgresql 
+- Create a database named bookstore
+- Update the credentials in server/db.js to connect to your local database
 
 ## Tools
 
-- [React Native](https://reactnative.dev/docs/getting-started)
+- [React](https://create-react-app.dev/)
+- [PostgreSQL](https://www.postgresql.org/)
+- [pgAdmin](https://www.pgadmin.org/) (optional)
+- [NodeJS](https://nodejs.org/en/)
+- [Express](https://expressjs.com/)
+- [Bootstrap](https://getbootstrap.com/docs/4.0/getting-started/introduction/)

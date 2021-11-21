@@ -1,0 +1,4 @@
+SELECT *
+FROM author
+LIMIT $1
+OFFSET $2;

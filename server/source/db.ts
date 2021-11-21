@@ -2,7 +2,7 @@ import pg from 'pg'
 import fs from 'fs'
 
 const dbName = "bookstore"
-const SQLFolder = '../SQL'
+const SQLFolder = '../SQL/Queries'
 /* Credentials to the local postgresql database */
 const pool = new pg.Pool({
     user: "postgres",
@@ -12,43 +12,51 @@ const pool = new pg.Pool({
     database: dbName
 });
 
-/* Creates tables in the bookstore database and populates them if needed*/
-fs.readFile(`${SQLFolder}/DDL.sql`, "utf-8", async function(err, data) {
-    if (err) {
-        console.error(err);
-        process.exit(-1);
-    }
 
-    let populateDB = () => {
-        /* populates the db if empty */
-        fs.readFile(`${SQLFolder}/populate.sql`, "utf-8", async function(err, pop_data) {
-            if (err) {
-                console.error(err);
-                process.exit(-1);
-            }
-            const authors = await pool.query("SELECT * FROM author LIMIT 1");
-        
-            if (authors.rowCount == 1) return;
+let preDefinedQueries: Map<string, string> = new Map();
 
-            pool.query(pop_data)
-                .then(() => console.log(`Added ${pop_data.split(/\r\n|\r|\n/).length} tuples`))
-                .catch(err => console.log(err.stack));
-            
+async function generateSQLQueries() {
+    await fs.readdir(SQLFolder, async (err, files) => {
+        if (err) {
+            console.log(err);
+            process.exit(-1);
+        }
+        files.forEach(file => {
+            fs.readFile(`${SQLFolder}/${file}`, "utf-8", (err, data) => {
+                preDefinedQueries.set(file.split('.')[0], data);
+            });
         });
-    }
-
-    pool.query(data)
-        .then(() => console.log("Successfully created database tables"))
-        .then(populateDB)
-        .catch(err => console.log(err.stack));
-});
+    });
+}
 
 class Database {
     pool: pg.Pool;
-
+    sqlQueries: Map<string, string>;
     constructor(pool: pg.Pool) {
         this.pool = pool;
+        if (Object.keys(preDefinedQueries).length == 0) {
+            generateSQLQueries();
+        }
+        this.sqlQueries = preDefinedQueries;
     }
+
+    public async runPredefinedQuery(queryName: string, paramaters: [...any]) {
+        if (!this.sqlQueries.has(queryName)) {
+            console.log(this.sqlQueries);
+            throw new Error(`Query "${queryName}" does not exist!`);
+        }
+        try {
+            let queryRet = await pool.query(this.sqlQueries.get(queryName)!, paramaters);
+            return {
+                "rowCount": queryRet.rowCount,
+                "rows": queryRet.rows
+            }
+        } catch(error) {
+            console.log(error);
+        }
+        
+    }
+
 }
 
 const db = new Database(pool);

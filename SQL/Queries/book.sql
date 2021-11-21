@@ -1,0 +1,4 @@
+SELECT * 
+FROM book
+NATURAL JOIN publisher
+WHERE ISBN = $1;

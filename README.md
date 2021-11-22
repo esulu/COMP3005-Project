@@ -26,4 +26,7 @@ TODO: update these when connection improvements are made
 - [pgAdmin](https://www.pgadmin.org/) (optional)
 - [NodeJS](https://nodejs.org/en/)
 - [Express](https://expressjs.com/)
+
+Use one or the other
 - [Bootstrap](https://getbootstrap.com/docs/4.0/getting-started/introduction/)
+- [Material UI](https://mui.com/)

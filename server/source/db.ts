@@ -29,6 +29,13 @@ async function generateSQLQueries() {
     });
 }
 
+export function makeResponse(queryResult:pg.QueryResult<any>) {
+    return {
+        "rowCount": queryResult.rowCount,
+        "rows": queryResult.rows
+    }
+}
+
 class Database {
     pool: pg.Pool;
     sqlQueries: Map<string, string>;
@@ -46,11 +53,8 @@ class Database {
             throw new Error(`Query "${queryName}" does not exist!`);
         }
         try {
-            let queryRet = await pool.query(this.sqlQueries.get(queryName)!, paramaters);
-            return {
-                "rowCount": queryRet.rowCount,
-                "rows": queryRet.rows
-            }
+            return makeResponse(await pool.query(this.sqlQueries.get(queryName)!, paramaters));
+            
         } catch(error) {
             console.log(error);
             return {

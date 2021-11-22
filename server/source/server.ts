@@ -58,7 +58,8 @@ app.get('/book/:isbn', (req, res) => {
     try {
         db.runPredefinedQuery("book", [req.params.isbn])
           .then(query_result => {
-              res.json(query_result)
+              // no need to have number of rows or row array if are looking for the isbn
+              res.json(query_result["rowCount"] == 0 ? {} :query_result["rows"][0]);
           });
     } catch(error:any) {
         console.log(error.message);

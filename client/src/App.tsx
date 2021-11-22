@@ -3,13 +3,14 @@ import './App.css';
 import { Route, Switch, Redirect } from 'react-router-dom';
 
 // components
-import { Input, List, NavBar } from './components';
+import { Input, List, NavBar, Book, BookStore } from './components';
 
 // pages
 // import { Store, Orders, Cart } from './pages';
 
 function App() {
   return (
+    
     <Fragment>
       {/* <div className="container">
         <Input />

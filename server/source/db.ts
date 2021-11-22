@@ -53,6 +53,10 @@ class Database {
             }
         } catch(error) {
             console.log(error);
+            return {
+                "rowCount": 0,
+                "rows": []
+            }
         }
         
     }

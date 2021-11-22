@@ -1,6 +1,10 @@
 import {useEffect, useState} from "react";
 import lodash from "lodash"
 import {Book} from "./Book"
+import { Button } from "@mui/material";
+import WestIcon from '@mui/icons-material/West';
+import EastIcon from '@mui/icons-material/East';
+import './BookStore.css'
 const booksPerPage = 25;
 const booksPerRow = 5;
 
@@ -42,6 +46,7 @@ export const BookStore = () => {
 
     return (
         <div className="container-fluid">
+            {/*display of books */}
             <div className="container">
                 {books && books.map(bookrow => {
                     return <div className="row" key={bookrow.reduce(isbnReducer, "")}>
@@ -53,7 +58,15 @@ export const BookStore = () => {
                     </div>
                 })}
             </div>
-            <div></div> {/* TODO footer */}
+            {/*Footer */}
+            <div className="container text-center">
+                <hr className="hr-text" data-content="Navigation" />
+                <Button variant="outlined" size="large" startIcon={<WestIcon />}>Previous</Button>
+                <span style={{margin:"1rem"}}></span>
+                <Button variant="outlined" size="large" endIcon={<EastIcon />}>Next</Button>
+                <span style={{marginLeft:"2.5rem"}}></span>
+                <hr className="hr-text"></hr>
+            </div> 
         </div>
     )
 };

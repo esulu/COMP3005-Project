@@ -1,4 +1,3 @@
-import { request } from 'http';
 import React, { useEffect, useState } from 'react';
 
 interface BookProp {
@@ -10,12 +9,6 @@ interface BookData {
     url: string,
     title: string,
     price: number
-}
-
-// defined outside to supress react-hooks/exhaustive-deps
-async function requestBookData(isbn:string, setData:React.Dispatch<React.SetStateAction<BookData | undefined>>) {
-    
-
 }
 
 export const Book = (props:BookProp) => {

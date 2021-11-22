@@ -3,3 +3,4 @@ export * from './SampleInput/Input';
 export * from './SampleList/List';
 export * from './Navigation/NavBar';
 export * from './Book/Book';
+export * from './Book/BookStore';

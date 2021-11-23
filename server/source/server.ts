@@ -13,7 +13,7 @@ let db = getDB();
 
 // 
 /**
- * function takes a parameter from a query string, usually from req.query.(paramater) and returns a number
+ * function takes a parameter from a query string, usually from req.query.(parameter) and returns a number
  * @param parameter The parameter given from req.query.parameter
  * @param defaultValue The default value to give parameter if the given value is invalid
  * @param min The minimum this value can be
@@ -32,9 +32,9 @@ function getIntParameter(parameter:any, defaultValue:number, min:number = 0, max
 }
 
 /**
- * function takes a parameter from a query string, usually from req.query.(paramater) and returns a string
+ * function takes a parameter from a query string, usually from req.query.(parameter) and returns a string
  * @param parameter The parameter given from req.query.parameter
- * @param acceptedValues Acceptable values that the paramater can take the value of
+ * @param acceptedValues Acceptable values that the parameter can take the value of
  * @param defaultValue The default value to give parameter if the given value is invalid
  * @returns A string, equal to parameter if it's an accepted value otherwise default value
  */

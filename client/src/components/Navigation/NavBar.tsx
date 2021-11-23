@@ -2,6 +2,7 @@ import React, { Fragment, FunctionComponent } from "react";
 import { Tabs, Tab } from "@mui/material";
 import { Store, Orders, Cart } from "../../pages";
 import { RouteComponentProps } from "react-router";
+import { Header } from "../Fragments/Header";
 
 interface INumToStr {
     [key: number]: string
@@ -41,7 +42,7 @@ export const NavBar: FunctionComponent<RouteComponentProps> = props => {
 
     return (
         <Fragment>
-            <h1 className="text-center mt-5">Look Inna Book</h1>
+            <Header />
             <Tabs
                 value={selectedTab}
                 onChange={handleChange}

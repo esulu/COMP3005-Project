@@ -169,6 +169,18 @@ app.get('/book/:isbn', (req, res) => {
     }
 });
 
+// login handler that returns a token if the credentials are valid
+app.use('/login', (req, res) => {
+    try {
+        db.runPredefinedQuery("login", [req.body.username, req.body.password])
+          .then(query_result => {
+              res.json(query_result["rowCount"] == 0 ? {} : query_result["rows"][0]);
+          });
+    } catch (error: any) {
+        console.log(error.message);
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });

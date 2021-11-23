@@ -63,13 +63,13 @@ class Database {
         this.sqlQueries = preDefinedQueries;
     }
 
-    public async runPredefinedQuery(queryName: string, paramaters: [...any]) {
+    public async runPredefinedQuery(queryName: string, parameters: [...any]) {
         if (!this.sqlQueries.has(queryName)) {
             console.log(this.sqlQueries);
             throw new Error(`Query "${queryName}" does not exist!`);
         }
         try {
-            return makeResponse(await pool.query(this.sqlQueries.get(queryName)!, paramaters));
+            return makeResponse(await pool.query(this.sqlQueries.get(queryName)!, parameters));
             
         } catch(error) {
             console.log(error);

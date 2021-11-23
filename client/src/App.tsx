@@ -1,33 +1,36 @@
 import React, { Fragment } from 'react';
 import './App.css';
 import { Route, Switch, Redirect } from 'react-router-dom';
+import { Stack, Alert } from '@mui/material';
 
 // components
-import { Input, List, NavBar, Book, BookStore } from './components';
+import { NavBar, UseToken } from './components';
 
 // pages
-// import { Store, Orders, Cart } from './pages';
+import { Login } from './pages';
 
 function App() {
-  return (
+  const { token, setToken } = UseToken();
+
+  if (!token) { // User is directed to login page if not authenticated
+    return <Login setToken={setToken} />
     
+  } else if (token === -1) {  // Invalid log in represented by token id -1
+    return (
+      <Fragment>
+        <Login setToken={setToken} />
+        <Stack alignItems="center">
+          <Alert severity="error">Error - Authentication Failed</Alert>
+        </Stack>
+      </Fragment>
+    );
+  }
+
+  return (
     <Fragment>
-      {/* <div className="container">
-        <Input />
-        <List />
-      </div> */}
-      {/* <NavBar /> */}
       <Switch>
-        <Redirect exact from='/' to='/store' />
+        <Redirect exact from="/" to="/store" />
         <Route exact path="/:page?" render={props => <NavBar {...props} />} />
-        {/* <Route path='/store' component={Store} />
-        <Route path='/book/:isbn' component={Book} />
-        <Route path='/orders' component={Orders} />
-        <Route path='/orders/:order_id' component={OrderDetails} />
-        <Route path='/cart' component={Cart} />
-        <Route path='/checkout' component={Checkout} />
-        <Route path='/statistics' component={SalesStatistics} />
-        <Route path='/editor' component={StockEditor} /> */}
       </Switch>
     </Fragment>
   );

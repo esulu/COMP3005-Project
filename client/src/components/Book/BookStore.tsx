@@ -49,7 +49,7 @@ export const BookStore = () => {
 
     // When the previouspage button is clicked, go back one page.
     const prevPage = () => {
-        if (page == 0) return;
+        if (page === 0) return;
         setPage(page - 1);
     }
 

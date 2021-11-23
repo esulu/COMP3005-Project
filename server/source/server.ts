@@ -44,7 +44,6 @@ function getStringParameter(parameter:any, acceptedValues:string[] = [], default
     if (!(typeof parameter === 'string' || parameter instanceof String))
         return defaultValue;
     let param = parameter.toString().trim();
-
     if (acceptedValues.length === 0 || acceptedValues.indexOf(param) > -1) 
         return param;
     return defaultValue;
@@ -71,6 +70,12 @@ app.get('/authors', (req, res) => {
     }
 });
 
+interface BooksType {
+    price: number,
+    year: number,
+    [index: string]: number,
+
+}
 /**
  * Endpoint returns a set of books
  * Note: the author field only contains one author in this endpoint.
@@ -89,14 +94,12 @@ app.get('/books', async(req, res) => {
     // ORDER BY cannot be used in parameterized queries, a limitation of pg-node
     // https://github.com/brianc/node-postgres/issues/300
     // https://stackoverflow.com/questions/67344790/order-by-command-using-a-prepared-statement-parameter-pg-promise
-    // Possible solution is by using pg-promise instead...
-    // Another possible solution is using a function: https://stackoverflow.com/questions/32425052/using-limit-order-by-with-pg-postgres-nodejs-as-a-parameter
-    /*
-    let ordering = getStringParameter(req.query.ordering, ["ASC", "DESC"], "ASC");
-    let order_by = getStringParameter(req.query.order_by, ["price", "year"]);
-    if (order_by === "")
-        ordering = "";
-    */
+    // https://stackoverflow.com/questions/32425052/using-limit-order-by-with-pg-postgres-nodejs-as-a-parameter
+    // Instead, we sort after
+    
+    let ordering = getStringParameter(req.query.ordering, ["asc", "desc"], "asc");
+    let order_by= getStringParameter(req.query.order_by, ["price", "year"]);
+    
     let parameters:any = [];
     let parameterNumber = 1;
 
@@ -139,8 +142,12 @@ app.get('/books', async(req, res) => {
         ${addParam("LIMIT", limit.toString(), true)}
         ${addParam("OFFSET", offset.toString(), true )}
         `;
-
-        res.json(makeResponse(await db.pool.query(query, parameters)));
+        let queryData = (await db.pool.query(query, parameters)).rows;
+        if (order_by !== "")
+            queryData.sort((lhs:BooksType, rhs:BooksType) => {
+                return ordering === "asc" ? lhs[order_by] - rhs[order_by] : rhs[order_by] - lhs[order_by];
+            });
+        res.json(makeResponse(queryData));
     } catch(error:any) {
         console.log(error.message);
        res.json(makeResponse([]));

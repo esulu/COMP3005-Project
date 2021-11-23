@@ -90,3 +90,5 @@ INSERT INTO written_by VALUES('0545317800', 50001);
 INSERT INTO written_by VALUES('9780307401946', 50015);
 INSERT INTO written_by VALUES('9781786826701', 50016);
 INSERT INTO written_by VALUES('9780062077011', 50017);
+INSERT INTO cart VALUES(1);
+INSERT INTO users VALUES(1, 1, 'esulu', 'pass', 'Eren Sulutas', 'eren@email.com', '123 Alexandria Way', false);

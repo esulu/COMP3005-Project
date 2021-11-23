@@ -3,6 +3,7 @@ import fs from 'fs'
 
 const dbName = "bookstore"
 const SQLFolder = '../SQL/Queries'
+
 /* Credentials to the local postgresql database */
 const pool = new pg.Pool({
     user: "postgres",
@@ -12,9 +13,14 @@ const pool = new pg.Pool({
     database: dbName
 });
 
-
+// All queries defined in /server/SQL/Queries
+// key is the actual SQL code in said file.
 let preDefinedQueries: Map<string, string> = new Map();
 
+/**
+ * Function gets all the queries of /server/SQL/Queries
+ * And populates the map preDefinedQueries
+ */
 async function generateSQLQueries() {
     await fs.readdir(SQLFolder, async (err, files) => {
         if (err) {
@@ -29,6 +35,23 @@ async function generateSQLQueries() {
     });
 }
 
+// https://www.typescriptlang.org/docs/handbook/advanced-types.html
+const isPGQueryResult = (res:string[] | pg.QueryResult<any>): res is pg.QueryResult<any> => {
+    return (res as pg.QueryResult<any>).rows !== undefined;
+}
+
+export function makeResponse(queryResult:string[] | pg.QueryResult<any>) {
+    if (isPGQueryResult(queryResult)) {
+        return {
+            "rowCount": queryResult.rowCount,
+            "rows": queryResult.rows
+        }
+    }
+    return {
+        "rowCount": queryResult.length,
+        "rows": queryResult
+    }
+}
 class Database {
     pool: pg.Pool;
     sqlQueries: Map<string, string>;
@@ -46,19 +69,12 @@ class Database {
             throw new Error(`Query "${queryName}" does not exist!`);
         }
         try {
-            let queryRet = await pool.query(this.sqlQueries.get(queryName)!, paramaters);
-            return {
-                "rowCount": queryRet.rowCount,
-                "rows": queryRet.rows
-            }
+            return makeResponse(await pool.query(this.sqlQueries.get(queryName)!, paramaters));
+            
         } catch(error) {
             console.log(error);
-            return {
-                "rowCount": 0,
-                "rows": []
-            }
+            return makeResponse([])
         }
-        
     }
 
 }

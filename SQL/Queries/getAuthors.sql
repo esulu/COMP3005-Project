@@ -1,0 +1,1 @@
+SELECT DISTINCT author_name FROM author;

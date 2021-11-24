@@ -1,11 +1,12 @@
-import React from "react";
-import { BookStore } from "../../components"; 
+import React, { Fragment } from "react";
+import { BookStore, SearchBar } from "../../components";
 
 export const Store = () => {
     return (
-        <>
-            <span style={{margin:"5rem"}}></span>
+        <Fragment>
+            <SearchBar />
+            <span style={{ margin: "5rem" }}></span>
             <BookStore></BookStore>
-        </>
+        </Fragment>
     )
 }

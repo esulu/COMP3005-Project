@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 /**
- * Allows retrieval and setting of the session token
+ * Allows retrieval, setting, and deletion of the session token
  * Stores tokens into local storage
  */
 export const UseToken = () => {
@@ -18,8 +18,13 @@ export const UseToken = () => {
         setToken(userToken.token);
     }
 
+    const deleteToken = () => {
+        localStorage.removeItem('token');
+    }
+
     return {
         setToken: saveToken,
-        token
+        token,
+        removeToken: deleteToken
     }
 }

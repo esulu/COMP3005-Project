@@ -185,8 +185,9 @@ app.get('/book/:isbn', (req, res) => {
         .then(query_result => {
             // no need to have number of rows or row array if are looking for the isbn
             // however there could be multiple authors of which we should return
+
             if (query_result.rowCount == 0) {
-                res.json(makeResponse([]));
+                res.json({});
                 return;
             }
             
@@ -212,7 +213,7 @@ app.get('/book/:isbn', (req, res) => {
         })
         .catch( error => {
             console.log(error.message);
-            res.json(makeResponse([]));
+            res.json({});
         })
 });
 

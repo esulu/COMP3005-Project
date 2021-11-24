@@ -189,7 +189,7 @@ app.get('/book/:isbn', (req, res) => {
             query_return.author_names = reduceMultipleAttributes("author_name");
             query_return.phone_numbers = reduceMultipleAttributes("phone_number");
 
-            res.json(makeResponse([query_return]));
+            res.json(query_return);
         })
         .catch( error => {
             console.log(error.message);

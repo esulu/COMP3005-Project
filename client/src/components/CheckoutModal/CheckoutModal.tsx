@@ -1,4 +1,4 @@
-// Takes a lot of code from https://mui.com/components/modal/
+// Most of the code comes from https://mui.com/components/modal/
 import * as React from 'react';
 import Backdrop from '@mui/material/Backdrop';
 import Box from '@mui/material/Box';

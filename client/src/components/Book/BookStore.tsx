@@ -25,10 +25,14 @@ export const BookStore = ({ searchRequest }: Props) => {
 
     // Gets the page by using offsets and limit and getting a different set of books to set into our books state
     const getPage = async () => {
-        const response = await fetch(`${searchRequest}&offset=${page * booksPerPage}&limit=${booksPerPage}`);
-        const jsonData = await response.json();
-        const bookChunks: BookType[][] = lodash.chunk(jsonData["rows"], booksPerRow);
-        setBooks(bookChunks);
+        try {
+            const response = await fetch(`${searchRequest}&offset=${page * booksPerPage}&limit=${booksPerPage}`);
+            const jsonData = await response.json();
+            const bookChunks: BookType[][] = lodash.chunk(jsonData["rows"], booksPerRow);
+            setBooks(bookChunks);
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     // When the nextPage button is clicked, advance one page

@@ -32,13 +32,18 @@ export const BookStore = () => {
 
     // Gets the page by using offsets and limit and getting a different set of books to set into our books state
     const getPage = async () => {
-        const response = await fetch(`http://localhost:5000/books?offset=${page*booksPerPage}&limit=${booksPerPage}`);
-        const jsonData = await response.json();
-        const bookChunks:BookType[][] = lodash.chunk(jsonData["rows"], booksPerRow);
-        if (books === undefined)
-            setBooks(bookChunks);
-        else if (!arraysEqual(books, bookChunks))
-            setBooks(bookChunks);
+        try {
+            const response = await fetch(`http://localhost:5000/books?offset=${page*booksPerPage}&limit=${booksPerPage}`);
+            const jsonData = await response.json();
+            const bookChunks:BookType[][] = lodash.chunk(jsonData["rows"], booksPerRow);
+            if (books === undefined)
+                setBooks(bookChunks);
+            else if (!arraysEqual(books, bookChunks))
+                setBooks(bookChunks);
+        } catch(error) {
+            console.log(error);
+        }
+        
     };
 
     // When the nextPage button is clicked, advance one page

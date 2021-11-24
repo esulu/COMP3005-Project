@@ -3,6 +3,7 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import { CheckoutAlert, AlertProps } from "./CheckoutAlert";
 
 const boxStyle = {
     p: 2,
@@ -16,11 +17,13 @@ const textFieldStyle = {
     width: "17.5rem"
 }
 
+
 export const CheckoutView = () => {
 
     const [address, setAddress] = useState("");
     const [bankNumber, setBankNumber] = useState("");
     const [password, setPassword] = useState("");
+    const [alert, setAlert] = useState<AlertProps | undefined>(undefined);
 
     const getToken = () => {
         const tokenString = localStorage.getItem('token');
@@ -29,10 +32,26 @@ export const CheckoutView = () => {
     }
 
 
-    const onConfirm = () => {
-        
+    const onConfirm = async () => {
+        let verifyResponse = await fetch("http://localhost:5000/verifyUser", {
+            "method": "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                "token": getToken(),
+                password })
+        });
+        console.log(alert);
+        setAlert({alertType:"error", alertTitle:"Error", alertDescription:"Password failure", isOpen:true});
+        console.log(alert);
+        if (verifyResponse["status"] !== 200) {
+
+        }
     }
 
+    const onAlertClose = () => {
+        console.log("closed");
+        setAlert(undefined);
+    }
 
     return (
         <div>
@@ -81,8 +100,9 @@ export const CheckoutView = () => {
                 />
             </Box>
             <Typography align='center'>
-                <Button variant="outlined">Confirm checkout</Button>
+                <Button variant="outlined" onClick={onConfirm}>Confirm checkout</Button>
             </Typography>
+            {alert && <CheckoutAlert alertProps={alert} onClose={onAlertClose}></CheckoutAlert>}
         </div>
     )
 }

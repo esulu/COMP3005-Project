@@ -1,6 +1,7 @@
 import { ChangeEvent, useState, SyntheticEvent, useEffect, Fragment } from "react";
 import { Autocomplete, Button, CircularProgress, Grid, MenuItem, TextField } from "@mui/material";
 import { Box } from "@mui/system";
+import { BookStore } from "..";
 
 interface SearchFill {
     result: string;
@@ -30,7 +31,6 @@ let results = [
     { result: 'Sample Book' }
 ];
 
-
 /**
  * Search bar component
  */
@@ -42,6 +42,9 @@ export const SearchBar = () => {
 
     // The search item i.e., title, author, etc.
     const [searchItem, setSearchItem] = useState(defaultItem);
+
+    // The request for the search
+    const [searchRequest, setSearchRequest] = useState('http://localhost:5000/books?');
 
     // Required for the asynchronous search bar
     const [open, setOpen] = useState(false);
@@ -68,13 +71,9 @@ export const SearchBar = () => {
         })
     }
 
-    // Search result handler
+    // Search result handler - update the search request
     const search = async () => {
-        console.log(searchItem + ": " + searchQuery);
-        const response = await fetch(`http://localhost:5000/books?${searchItem}=${searchQuery}`);
-        const jsonResponse = await response.json();
-        // TODO: display the returned books, somehow
-        console.log(jsonResponse);
+        setSearchRequest(`http://localhost:5000/books?${searchItem}=${searchQuery}`)
     }
 
     useEffect(() => {
@@ -104,67 +103,70 @@ export const SearchBar = () => {
     }, [open]);
 
     return (
-        <Box
-            component="form"
-            sx={{
-                '& .MuiTextField-root': { m: 1, width: '50ch' },
-            }}
-            noValidate
-            autoComplete="off"
-        >
-            <Grid container justifyContent="center">
-                <TextField
-                    id="search-item"
-                    select
-                    label="Search Item"
-                    value={searchItem}
-                    onChange={handleChange}
-                >
-                    {searchItems.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                            {option.label}
-                        </MenuItem>
-                    ))}
-                </TextField>
-                <Autocomplete
-                    id="search-bar"
-                    freeSolo
-                    open={open}
-                    onOpen={() => {
-                        setOpen(true);
-                    }}
-                    onClose={() => {
-                        setOpen(false);
-                    }}
-                    isOptionEqualToValue={(option, value) => option.result === value.result}
-                    getOptionLabel={(option) => option.result}
-                    options={options}
-                    loading={loading}
-                    onInputChange={handleQueryChange}
-                    renderInput={(params) => (
-                        <TextField
-                            {...params}
-                            label="Search"
-                            InputProps={{
-                                ...params.InputProps,
-                                endAdornment: (
-                                    <Fragment>
-                                        {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                                        {params.InputProps.endAdornment}
-                                    </Fragment>
-                                ),
-                            }}
-                        />
-                    )}
-                />
-                <Button
-                    variant="contained"
-                    sx={{ height: '3rem', top: '.7rem' }}
-                    onClick={search}
-                >
-                    Search
-                </Button>
-            </Grid>
-        </Box >
+        <Fragment>
+            <Box
+                component="form"
+                sx={{
+                    '& .MuiTextField-root': { m: 1, width: '50ch' },
+                }}
+                noValidate
+                autoComplete="off"
+            >
+                <Grid container justifyContent="center">
+                    <TextField
+                        id="search-item"
+                        select
+                        label="Search Item"
+                        value={searchItem}
+                        onChange={handleChange}
+                    >
+                        {searchItems.map((option) => (
+                            <MenuItem key={option.value} value={option.value}>
+                                {option.label}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                    <Autocomplete
+                        id="search-bar"
+                        freeSolo
+                        open={open}
+                        onOpen={() => {
+                            setOpen(true);
+                        }}
+                        onClose={() => {
+                            setOpen(false);
+                        }}
+                        isOptionEqualToValue={(option, value) => option.result === value.result}
+                        getOptionLabel={(option) => option.result}
+                        options={options}
+                        loading={loading}
+                        onInputChange={handleQueryChange}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label="Search"
+                                InputProps={{
+                                    ...params.InputProps,
+                                    endAdornment: (
+                                        <Fragment>
+                                            {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                                            {params.InputProps.endAdornment}
+                                        </Fragment>
+                                    ),
+                                }}
+                            />
+                        )}
+                    />
+                    <Button
+                        variant="contained"
+                        sx={{ height: '3rem', top: '.7rem' }}
+                        onClick={search}
+                    >
+                        Search
+                    </Button>
+                </Grid>
+            </Box >
+            <BookStore searchRequest={searchRequest} />
+        </Fragment>
     );
 }

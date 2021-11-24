@@ -76,6 +76,12 @@ interface BooksType {
     [index: string]: number,
 
 }
+
+interface BookType {
+    author_name: string,
+    phone_number: string,
+    [index: string]: string,
+}
 /**
  * Endpoint returns a set of books
  * Note: the author field only contains one author in this endpoint.
@@ -154,19 +160,41 @@ app.get('/books', async(req, res) => {
     }
 });
 
-// TODO: perform an inner join with book and author to get the authors
-// authors will need to be as a list
+
 app.get('/book/:isbn', (req, res) => {
-    try {
-        db.runPredefinedQuery("book", [req.params.isbn])
-          .then(query_result => {
-              // no need to have number of rows or row array if are looking for the isbn
-              res.json(query_result["rowCount"] == 0 ? {} :query_result["rows"][0]);
-          });
-    } catch(error:any) {
-        console.log(error.message);
-        res.json(makeResponse([]));
-    }
+    db.runPredefinedQuery("book", [req.params.isbn])
+        .then(query_result => {
+            // no need to have number of rows or row array if are looking for the isbn
+            // however there could be multiple authors of which we should return
+            if (query_result.rowCount == 0) {
+                res.json(makeResponse([]));
+                return;
+            }
+            
+            let query_return = query_result.rows[0];
+
+            // For any attributes that have many values, we want to return all the values that are possible
+            // and place into an array of those values.
+            // Generally, we must also change the name of the variable (so we delete it after)
+            const reduceMultipleAttributes = (bookTypeKey:string) => {
+                const reducer = (list:string[], currentValue:BookType) => {
+                    list.push(currentValue[bookTypeKey]);
+                    return list;
+                }
+                let reduced = [... new Set(query_result.rows.reduce(reducer, []))]; // remove any possible duplicates
+                delete query_return[bookTypeKey];
+                return reduced;
+            }   
+
+            query_return.author_names = reduceMultipleAttributes("author_name");
+            query_return.phone_numbers = reduceMultipleAttributes("phone_number");
+
+            res.json(makeResponse([query_return]));
+        })
+        .catch( error => {
+            console.log(error.message);
+            res.json(makeResponse([]));
+        })
 });
 
 // login handler that returns a token if the credentials are valid

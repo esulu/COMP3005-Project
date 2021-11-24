@@ -38,7 +38,7 @@ export const BookStore = () => {
             const bookChunks:BookType[][] = lodash.chunk(jsonData["rows"], booksPerRow);
             if (books === undefined)
                 setBooks(bookChunks);
-            else if (!arraysEqual(books, bookChunks))
+            else if (!arraysEqual(books, bookChunks) && jsonData["rowCount"] > 0)
                 setBooks(bookChunks);
         } catch(error) {
             console.log(error);

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
@@ -16,6 +17,23 @@ const textFieldStyle = {
 }
 
 export const CheckoutView = () => {
+
+    const [address, setAddress] = useState("");
+    const [bankNumber, setBankNumber] = useState("");
+    const [password, setPassword] = useState("");
+
+    const getToken = () => {
+        const tokenString = localStorage.getItem('token');
+        const userToken = JSON.parse(tokenString || '{}');
+        return userToken?.token;
+    }
+
+
+    const onConfirm = () => {
+        
+    }
+
+
     return (
         <div>
             <Typography variant="h3" align="center" gutterBottom>
@@ -31,6 +49,7 @@ export const CheckoutView = () => {
                     id="filled-required"
                     label="Required"
                     variant="filled"
+                    onChange={event => setAddress(event.target.value)}
                 />
             </Box>
             
@@ -44,6 +63,7 @@ export const CheckoutView = () => {
                     id="filled-required"
                     label="Required"
                     variant="filled"
+                    onChange = {event => setBankNumber(event.target.value)}
                 />
             </Box>
             <Box sx={boxStyle} m={1}>
@@ -57,6 +77,7 @@ export const CheckoutView = () => {
                     type="password"
                     autoComplete="current-password"
                     variant="filled"
+                    onChange = {event => setPassword(event.target.value)}
                 />
             </Box>
             <Typography align='center'>

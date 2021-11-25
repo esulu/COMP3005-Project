@@ -37,3 +37,7 @@ From https://onaircode.com/bootstrap-horizontal-line-examples/
 .container-fluid {
     margin-top: 1rem;
 }
+
+.row {
+    margin-bottom: 1rem;
+}

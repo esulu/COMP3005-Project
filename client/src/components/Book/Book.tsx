@@ -1,3 +1,4 @@
+import { Card, CardActionArea, CardContent, CardMedia, Tooltip, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 // Types for the prop
@@ -13,7 +14,7 @@ interface BookData {
     price: number
 }
 
-export const Book = (props:BookProp) => {
+export const Book = (props: BookProp) => {
     // States
     const [bookData, setBookData] = useState<undefined | BookData>(undefined);
 
@@ -24,18 +25,37 @@ export const Book = (props:BookProp) => {
         setBookData(jsonData);
     }
 
+    // Truncate book titles
+    const truncate = (str: string) => {
+        return str.length > 35 ? str.substring(0, 32) + "..." : str;
+    }
+
     // Only change the state once
-    useEffect(() => {getBookData()}, []);
+    useEffect(() => { getBookData() }, []);
 
     return (
-        <div key={props.ISBN} className="container text-center border border-primary rounded center">
-        {bookData !== undefined && // only display if we have book data
-            <>
-                <img src={bookData.url} alt="" className="center"></img>
-                <p>{bookData.title}</p>
-                <p>CAD ${bookData.price}</p>
-            </>
-        }
+        <div key={props.ISBN}>
+            {bookData !== undefined && // only display if we have book data
+                <Tooltip title={bookData.title}>
+                    <Card sx={{ width: 198, height: 350 }} >
+                        <CardActionArea sx={{ height: 350 }}>
+                            <CardMedia
+                                component="img"
+                                height="200"
+                                image={bookData.url}
+                            />
+                            <CardContent>
+                                <Typography gutterBottom variant="h5" component="div">
+                                    {truncate(bookData.title)}
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    CAD ${bookData.price}
+                                </Typography>
+                            </CardContent>
+                        </CardActionArea>
+                    </Card>
+                </Tooltip>
+            }
         </div>
     );
 };

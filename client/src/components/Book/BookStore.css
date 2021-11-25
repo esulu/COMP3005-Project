@@ -33,3 +33,7 @@ From https://onaircode.com/bootstrap-horizontal-line-examples/
     color: #000000;
     background-color: #ffffff;
 }
+
+.container-fluid {
+    margin-top: 1rem;
+}

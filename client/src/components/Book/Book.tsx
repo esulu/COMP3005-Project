@@ -12,7 +12,7 @@ interface BookProp {
 export interface BookData {
     author_names: (string)[],
     genre: string,
-    ISBN: string,
+    isbn: string,
     page_count: number,
     price: number,
     publisher_name: string,
@@ -44,7 +44,10 @@ export const Book = (props: BookProp) => {
     }
 
     // Only change the state once
-    useEffect(() => { getBookData() }, []);
+    useEffect(() => {
+        getBookData()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <div key={props.ISBN}>

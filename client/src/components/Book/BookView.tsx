@@ -1,5 +1,6 @@
-import { Grid, Typography } from "@mui/material";
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
+import { Grid, Typography, Button, Stack, Alert, Collapse, IconButton } from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
 import { BookData } from "..";
 
 interface BookProp {
@@ -8,6 +9,32 @@ interface BookProp {
 
 // Display book info and option to add to the cart
 export const BookView = (props: BookProp) => {
+    const [quantity, setQuantity] = useState(1);
+
+    // Alert button
+    const [open, setOpen] = useState(false);
+
+    // Increase the quantity up to the maximum available copies
+    const incrementQuantity = () => {
+        if (quantity < props.bookData.quantity)
+            setQuantity(quantity + 1);
+    }
+
+    // Decrement the quantity down to 0
+    const decrementQuantity = () => {
+        if (quantity > 0)
+            setQuantity(quantity - 1);
+    }
+
+    // Add the books to the user's cart
+    const addToCart = async () => {
+        // const response = await fetch(`http://localhost:5000/`);
+        // const jsonData = await response.json();
+        // console.log(jsonData);
+        console.log("added to cart " + quantity + " books");
+        setOpen(true);
+    }
+
     return (
         <Fragment>
             <Typography id="modal-modal-title" variant="h4" component="h2">
@@ -16,7 +43,7 @@ export const BookView = (props: BookProp) => {
 
             <Grid container spacing={3} sx={{ mt: 1 }}>
                 <Grid item xs={4}>
-                    <img src={props.bookData.url} height='100%' width='100%'></img>
+                    <img src={props.bookData.url} alt="" height='100%' width='100%'></img>
                 </Grid>
                 <Grid item xs={4}>
                     <Typography id="modal-modal-description" sx={{ mt: 2 }}>
@@ -43,14 +70,62 @@ export const BookView = (props: BookProp) => {
                     <Typography id="modal-modal-availability" sx={{ mt: 2 }}>
                         Available copies: {props.bookData.quantity}
                     </Typography>
-                </Grid>
-                <Grid item xs={4}>
-                    {/* TODO: Implement this */}
-                    <Typography id="modal-modal-cart-text" variant='h5' sx={{ mt: 2 }}>
-                        Add to cart
+                    <Typography id="modal-modal-isbn" sx={{ mt: 2 }}>
+                        ISBN: {props.bookData.isbn}
                     </Typography>
                 </Grid>
+                <Grid item xs={4}>
+                    <Typography id="modal-modal-cart-text" variant='h5' sx={{ mt: 2 }}>
+                        Purchase
+                    </Typography>
+                    <Typography id="modal-modal-cart-information" sx={{ mt: 2 }}>
+                        Total: ${(quantity * props.bookData.price).toFixed(2)}
+                    </Typography>
+                    <Stack spacing={2}>
+                        <Stack spacing={2} direction="row" sx={{ mt: 2, justifyContent: "space-between" }}>
+                            <Button
+                                size="small"
+                                disableElevation
+                                variant="contained"
+                                onClick={() => decrementQuantity()}
+                            >
+                                -
+                            </Button>
+                            <p>{quantity}</p>
+                            <Button
+                                size="small"
+                                disableElevation
+                                variant="contained"
+                                onClick={() => incrementQuantity()}
+                            >
+                                +
+                            </Button>
+                        </Stack>
+                        <Button variant="outlined" onClick={addToCart}>
+                            Add to cart
+                        </Button>
+                        <Collapse in={open}>
+                            <Alert
+                                action={
+                                    <IconButton
+                                        aria-label="close"
+                                        color="inherit"
+                                        size="small"
+                                        onClick={() => {
+                                            setOpen(false);
+                                        }}
+                                    >
+                                        <CloseIcon fontSize="inherit" />
+                                    </IconButton>
+                                }
+                                sx={{ mb: 2 }}
+                            >
+                                Success!
+                            </Alert>
+                        </Collapse>
+                    </Stack>
+                </Grid>
             </Grid>
-        </Fragment>
+        </Fragment >
     );
 }

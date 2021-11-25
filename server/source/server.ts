@@ -1,6 +1,8 @@
 import express from 'express'
 import cors from 'cors'
-import { getDB, makeResponse } from './db'
+import pg from 'pg'
+import { getDB, makeResponse, QueryResult, Transaction } from './db'
+import _ from 'lodash'
 
 const port = 5000;
 const app = express();
@@ -222,6 +224,69 @@ app.use('/verifyUser', (req, res) => {
         .catch(error => {
             console.log(error);
         });
+});
+
+app.use('/checkout', async (req, res) => {
+    let user_id = getIntParameter(req.body.token, -1, -1, 10000000);
+
+    async function doCheckout(client:pg.PoolClient) {
+        let insureIntegrity = (query:QueryResult) => {
+            console.log(query);
+            if (query.rowCount === 0)
+                throw "A query had no rows returned!";
+        }
+        try {
+            // Get the warehouse key
+            let warehouses = await db.runPredefinedQuery("warehouses", [], client);
+            insureIntegrity(warehouses);
+            let warehouse_id = warehouses.rows[0].warehouse_id;
+
+            // Get the cart key
+            console.log("warehouse_id = " +warehouse_id);
+            console.log("user_id = " +user_id);
+            let carts = await db.runPredefinedQuery("userCarts", [user_id], client);
+            insureIntegrity(carts);
+            let cart_id = carts.rows[0].cart_id;
+            console.log("cart_id = " + cart_id);
+
+            // Create a shipping tuple and get the key
+            let insertShipping = await db.runPredefinedQuery("insertShipping", [_.sample(db.shippingCompanies), db.shippingStatuses[0],warehouse_id]);
+            insureIntegrity(insertShipping);
+            let shipping_id = insertShipping.rows[0].shipping_id;
+            console.log("shipping_id = " + shipping_id);
+            
+            // Create a new cart
+            let insertCart = await db.runPredefinedQuery("insertCart", [], client);
+            insureIntegrity(insertCart);
+            let new_cart_id = insertCart.rows[0].cart_id
+            console.log("new cart id="+new_cart_id);
+            console.log([req.body.address, req.body.bankNumber, shipping_id, user_id, cart_id]);
+
+            (await db.runTransactions([{
+                // Insert the new order tuple
+                predefinedQuery: "insertOrder",
+                parameters: [req.body.address, req.body.bankNumber, shipping_id, user_id, cart_id]
+            }, {
+                // set the user to the new cart
+                predefinedQuery: "setUserCart",
+                parameters: [new_cart_id, user_id]
+            }])).forEach( t => insureIntegrity(t));
+
+            throw "";
+        } catch(error) {
+            return true;
+        }
+        return false;
+    }
+
+    db.runTransaction(doCheckout)
+        .then( res=> {
+            console.log("result "+res);
+        }).catch( err => {
+            console.log(err);
+        });
+
+
 });
 
 app.listen(port, () => {

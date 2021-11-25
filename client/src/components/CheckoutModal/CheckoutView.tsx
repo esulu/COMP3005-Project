@@ -34,22 +34,40 @@ export const CheckoutView = () => {
 
     const onConfirm = async () => {
         let verifyResponse = await fetch("http://localhost:5000/verifyUser", {
-            "method": "POST",
+            method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 "token": getToken(),
                 password })
-        });
-        console.log(alert);
-        setAlert({alertType:"error", alertTitle:"Error", alertDescription:"Password failure", isOpen:true});
-        console.log(alert);
-        if (verifyResponse["status"] !== 200) {
+        }).catch( e => {
+            setAlert({alertType:"error", alertTitle:"Error", alertDescription:e.message, isOpen:true});
+        })
+        if (!verifyResponse) return;
 
+        if (verifyResponse["status"] !== 200) {
+            setAlert({alertType:"error", alertTitle:"Error", alertDescription:"Incorrect password", isOpen:true});
+            return;
         }
+
+        let checkoutResponse = await fetch("http://localhost:5000/checkout", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                token: getToken(),
+                address: address,
+                bankNumber: bankNumber,
+            })
+        }).catch( e => {
+            setAlert({alertType:"error", alertTitle:"Error", alertDescription:e.message, isOpen:true});
+        });
+        if (!checkoutResponse) return;
+
+
+
+
     }
 
     const onAlertClose = () => {
-        console.log("closed");
         setAlert(undefined);
     }
 

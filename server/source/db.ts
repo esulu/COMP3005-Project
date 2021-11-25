@@ -175,8 +175,9 @@ class Database {
             throw e
         }
         finally {
-            client.release()
+            client.release();
         }
+
     }
 
 }

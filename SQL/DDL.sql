@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS shipping
 CREATE TABLE IF NOT EXISTS orders
 (
     order_ID SERIAL PRIMARY KEY,
-    order_date DATE NOT NULL,
+    order_date DATE NOT NULL DEFAULT CURRENT_DATE,
     order_address VARCHAR(60) NOT NULL,
     order_bank_number VARCHAR(20) NOT NULL,
     shipping_ID INT NOT NULL,

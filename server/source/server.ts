@@ -251,23 +251,43 @@ app.use('/checkout', async (req, res) => {
         return;
     }
 
+
+    // Whenever we run a query in our transaction, it shouldn't return an empty table
+    const insureIntegrity = (query:QueryResult) => {
+        if (query.rowCount === 0)
+            throw "During the transaction, empty data was returned, does the user have a cart?";
+    }
+
+    let cart_id:number; // we use this in both functions, might as well do the query once.
+
+    // Before we do the queries, we should ensure that the cart of the user actually has data in it
+    async function ensureBooksInCart(client:pg.PoolClient): Promise<QueryCreatorReturnType> {
+        try {
+            // Get the cart key
+            let carts = await db.runPredefinedQuery("userCarts", [user_id], client);
+            insureIntegrity(carts);
+            cart_id = carts.rows[0].cart_id;
+
+            // get the number of books in the cart
+            let num = await db.runPredefinedQuery("getNumberOfBooksInCart", [cart_id]);
+            insureIntegrity(num); // this one would actually be pretty fatal
+            if (parseInt(num.rows[0].quantity) === 0)
+                throw "There are no books in the cart.";
+
+        } catch(error:any) {
+            return {hasErrors:true, error:error};
+        }
+        return {hasErrors:false};
+    }
+
     // query function to run in transaction
     async function doCheckout(client:pg.PoolClient) : Promise<QueryCreatorReturnType>{
-        // Whenever we run a query in our transaction, it shouldn't return an empty table
-        let insureIntegrity = (query:QueryResult) => {
-            if (query.rowCount === 0)
-                throw "During the transaction, empty data was returned, does the user have a cart?";
-        }
+        
         try {
             // Get the warehouse key
             let warehouses = await db.runPredefinedQuery("warehouses", [], client);
             insureIntegrity(warehouses);
             let warehouse_id = warehouses.rows[0].warehouse_id;
-
-            // Get the cart key
-            let carts = await db.runPredefinedQuery("userCarts", [user_id], client);
-            insureIntegrity(carts);
-            let cart_id = carts.rows[0].cart_id;
 
             // Create a shipping tuple and get the key
             let insertShipping = await db.runPredefinedQuery("insertShipping", [_.sample(db.shippingCompanies), db.shippingStatuses[0],warehouse_id]);
@@ -289,12 +309,20 @@ app.use('/checkout', async (req, res) => {
         return {hasErrors:false};
     }
 
-    db.runTransaction(doCheckout)
+    // Now run the transactions, first ensuring there are actually books in the cart
+    db.runTransaction(ensureBooksInCart)
         .then( () => {
-            res.json({status:200})
+            // Now perform the checkout
+            db.runTransaction(doCheckout)
+                .then( () => res.json({status:200}))
+                .catch(err => {
+                    console.log(err);
+                    res.json({status:400, error:err});
+                });
         }).catch( err => {
-            console.log(err);
-            res.json({status:400, error:err})
+            // User didn't have books, this should be handled by the client(?)
+            console.log("FATAL error : " + err);
+            res.json({status:400, error:err});
         });
 });
 

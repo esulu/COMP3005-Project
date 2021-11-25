@@ -1,0 +1,1 @@
+INSERT INTO shipping(company_name, status, warehouse_ID) VALUES($1, $2, $3) RETURNING *

@@ -1,6 +1,8 @@
 import express from 'express'
 import cors from 'cors'
-import { getDB, makeResponse } from './db'
+import pg from 'pg'
+import { getDB, makeResponse, QueryResult, QueryCreatorReturnType } from './db'
+import _ from 'lodash'
 
 const port = 5000;
 const app = express();
@@ -290,6 +292,121 @@ app.use('/login', (req, res) => {
     } catch (error: any) {
         console.log(error.message);
     }
+});
+
+// For when after the user has logged in
+// token is already known from local storage of the webstie and the user provided the password.
+app.use('/verifyUser', (req, res) => {
+    db.runPredefinedQuery("verifyUser", [req.body.token, req.body.password])
+        .then(query_result => {
+            if (query_result["rowCount"] == 0)
+                res.json({status:400, text:"Either the provided token doesn't exist or the password is incorrect"});
+            else
+                res.json({ status:200, text:"" });
+        })
+        .catch(error => {
+            console.log(error);
+        });
+});
+
+app.use('/checkout', async (req, res) => {
+    // Santiize the three inputs, user_id, address and bankNumber
+    let user_id = getIntParameter(req.body.token, -1, -1, 10000000);
+    let address = req.body.address;
+    if (address == null || address.trim() == "") {
+        res.json({status:400, error:"Address must be specified"});
+        return;
+    }
+    address = address.toString().trim();
+    if (address.length > 60) {
+        res.json({status:400, error:"Address is too long!"});
+        return;
+    }
+
+    let bankNumber = req.body.bankNumber;
+    if (bankNumber === null || bankNumber.trim() == "") {
+        res.json({status:400, error:"A bank number must be provided"});
+        return;
+    }
+    bankNumber = bankNumber.toString().trim();
+    if (bankNumber.length > 20) {
+        res.json({status:400, error:"The bank number is too long!"});
+        return;
+    }
+
+
+    // Whenever we run a query in our transaction, it shouldn't return an empty table
+    const insureIntegrity = (query:QueryResult) => {
+        if (query.rowCount === 0)
+            throw "During the transaction, empty data was returned, does the user have a cart?";
+    }
+
+    let cart_id:number; // we use this in both functions, might as well do the query once.
+
+    // Before we do the queries, we should ensure that the cart of the user actually has data in it
+    async function ensureBooksInCart(client:pg.PoolClient): Promise<QueryCreatorReturnType> {
+        try {
+            // Get the cart key
+            let carts = await db.runPredefinedQuery("userCarts", [user_id], client);
+            insureIntegrity(carts);
+            cart_id = carts.rows[0].cart_id;
+
+            // get the number of books in the cart
+            let num = await db.runPredefinedQuery("getNumberOfBooksInCart", [cart_id]);
+            insureIntegrity(num); // this one would actually be pretty fatal
+            if (parseInt(num.rows[0].quantity) === 0)
+                throw "There are no books in the cart.";
+
+        } catch(error:any) {
+            return {hasErrors:true, error:error};
+        }
+        return {hasErrors:false};
+    }
+
+    // query function to run in transaction
+    async function doCheckout(client:pg.PoolClient) : Promise<QueryCreatorReturnType>{
+        
+        try {
+            // Get the warehouse key
+            let warehouses = await db.runPredefinedQuery("warehouses", [], client);
+            insureIntegrity(warehouses);
+            let warehouse_id = warehouses.rows[0].warehouse_id;
+
+            // Create a shipping tuple and get the key
+            let insertShipping = await db.runPredefinedQuery("insertShipping", [_.sample(db.shippingCompanies), db.shippingStatuses[0],warehouse_id]);
+            insureIntegrity(insertShipping);
+            let shipping_id = insertShipping.rows[0].shipping_id;
+            // Create a new cart
+            let insertCart = await db.runPredefinedQuery("insertCart", [], client);
+            insureIntegrity(insertCart);
+            let new_cart_id = insertCart.rows[0].cart_id;
+
+            // Insert the order tuple
+            insureIntegrity(await db.runPredefinedQuery("insertOrder", [address, bankNumber, shipping_id, user_id, cart_id], client));
+            // Change the user's cart id to a new cart.
+            insureIntegrity(await db.runPredefinedQuery("setUserCart", [new_cart_id, user_id], client));
+            
+        } catch(error:any) {
+            return {hasErrors:true, error:error};
+        }
+        return {hasErrors:false};
+    }
+
+    // Now run the transactions, first ensuring there are actually books in the cart
+    db.runTransaction(ensureBooksInCart)
+        .then( () => {
+            // Now perform the checkout
+            db.runTransaction(doCheckout)
+                .then( () => res.json({status:200}))
+                .catch(err => {
+                    console.log(err);
+                    res.json({status:400, error:err});
+                });
+        }).catch( err => {
+            // User didn't have books, this should be handled by the client(?)
+            console.log("FATAL error : " + err);
+            res.json({status:400, error:err});
+        });
 });
 
 app.listen(port, () => {

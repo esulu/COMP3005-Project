@@ -6,4 +6,5 @@ export * from './Book/Book';
 export * from './Book/BookStore';
 export * from './Auth/PrivateRoute';
 export * from './Auth/UseToken';
+export * from './CheckoutModal/CheckoutModal';
 export * from './Fragments/SearchBar';

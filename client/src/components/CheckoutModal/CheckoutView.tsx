@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { CheckoutAlert, AlertProps } from "./CheckoutAlert";
 
+// Style for every box
 const boxStyle = {
     p: 2,
     border: 1,
@@ -13,26 +14,31 @@ const boxStyle = {
     borderColor: "primary.main"
 }
 
+// Style for evert text field
 const textFieldStyle = {
     width: "17.5rem"
 }
 
-
+// Function provides a view for a checkout
+// The user can enter information and confirm checkout to the server
 export const CheckoutView = () => {
-
+    // states
     const [address, setAddress] = useState("");
     const [bankNumber, setBankNumber] = useState("");
     const [password, setPassword] = useState("");
     const [alert, setAlert] = useState<AlertProps | undefined>(undefined);
 
+    // gets the token (and thus user_id) of the current user
     const getToken = () => {
         const tokenString = localStorage.getItem('token');
         const userToken = JSON.parse(tokenString || '{}');
         return userToken?.token;
     }
 
-
+    // Function occurs when the confirm button is pressed
     const onConfirm = async () => {
+
+        // First try to validate the user's password that waas provided with their token/user_id
         let verifyResponse = await fetch("http://localhost:5000/verifyUser", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
@@ -46,12 +52,14 @@ export const CheckoutView = () => {
         if (!verifyResponse) return;
 
         let verifyRes = await verifyResponse.json()
-
+        // User had wrong password
         if (verifyRes.status !== 200) {
             setAlert({ alertType: "error", alertTitle: "Authentication Error", alertDescription: "Incorrect password", isOpen: true });
             return;
         }
 
+        // Now perform the checkout process by providing all the data given in this view
+        // to the server of which will generate a repsonse if it was successful or not
         let checkoutResponse = await fetch("http://localhost:5000/checkout", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
@@ -71,6 +79,9 @@ export const CheckoutView = () => {
         if (!checkoutResponse) return;
 
         let checkoutRes = await checkoutResponse.json();
+
+        // Wasn't successful, if this was a server error the message will be long, for messages for the user
+        // they are quite short in length
         if (checkoutRes.status !== 200) {
             setAlert({
                 alertType: "error",
@@ -78,9 +89,9 @@ export const CheckoutView = () => {
                 alertDescription: checkoutRes.error.length >= 50 ? "A server issue occured while checking out" : checkoutRes.error,
                 isOpen: true
             });
-            console.log(checkoutRes.error);
             return;
         }
+
         setAlert({
             alertType: "success",
             alertTitle: "Order completed",
@@ -92,8 +103,9 @@ export const CheckoutView = () => {
 
     }
 
+    // Callback function for when the alert is closed
     const onAlertClose = () => {
-        setAlert(undefined);
+        setAlert(undefined); // reset the state
     }
 
     return (
@@ -101,6 +113,8 @@ export const CheckoutView = () => {
             <Typography variant="h3" align="center" gutterBottom>
                 Checkout
             </Typography>
+
+            {/* Box container for address field */}
             <Box sx={boxStyle} m={1}>
                 <Typography gutterBottom>
                     Enter address:
@@ -115,6 +129,7 @@ export const CheckoutView = () => {
                 />
             </Box>
 
+            {/* Box container for bank number field */}
             <Box sx={boxStyle} m={1}>
                 <Typography gutterBottom>
                     Enter Bank account number:
@@ -128,6 +143,8 @@ export const CheckoutView = () => {
                     onChange={event => setBankNumber(event.target.value)}
                 />
             </Box>
+
+            {/* Box container for password field */}
             <Box sx={boxStyle} m={1}>
                 <Typography gutterBottom>
                     Re-enter password for verification:
@@ -142,9 +159,13 @@ export const CheckoutView = () => {
                     onChange={event => setPassword(event.target.value)}
                 />
             </Box>
+
+            {/* Button on confirm*/}
             <Typography align='center' sx={{marginBottom:2}}>
                 <Button variant="outlined" onClick={onConfirm}>Confirm checkout</Button>
             </Typography>
+
+            {/* The alert popup when the user presses the confirm checkout button */}
             {alert && <CheckoutAlert alertProps={alert} onClose={onAlertClose}></CheckoutAlert>}
         </div>
     )

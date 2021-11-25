@@ -1,4 +1,5 @@
 // Most of the code comes from https://mui.com/components/modal/
+// It essentially is just the popup that comes up
 import * as React from 'react';
 import Backdrop from '@mui/material/Backdrop';
 import Box from '@mui/material/Box';
@@ -43,7 +44,7 @@ export const CheckoutModal = () => {
             >
                 <Fade in={open}>
                     <Box sx={style}>
-                        <CheckoutView></CheckoutView>
+                        <CheckoutView></CheckoutView> {/* Inside here is the view of our checkout screen */}
                     </Box>
                 </Fade>
             </Modal>

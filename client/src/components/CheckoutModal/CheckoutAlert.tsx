@@ -14,11 +14,18 @@ interface CheckOutAlertSignature {
     onClose: () => void
 }
 
+
+// similarities comes from https://mui.com/components/alert/
+/**
+ * A component for peforming alerts specifically for the checkoutview
+ * @param props The alertprops defined as in type and a function onclose when the user pressed the close button 
+ */
 export const CheckoutAlert = (props:CheckOutAlertSignature) => {
 
-
+    // states
     const [open, setOpen] = useState(true);
 
+    // call callback function each time user closes 
     useEffect(()=> {
         if (!open)
             props.onClose();

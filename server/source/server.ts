@@ -56,7 +56,7 @@ function getStringParameter(parameter: any, acceptedValues: string[] = [], defau
  * function takes a parameter from a query string, usually from req.query.(parameter) and returns a boolean
  * @param parameter The parameter given from req.query.parameter
  * @param defaultValue The default value to give parameter if the given value is invalid
- * @returns parameter if the paramater was a boolean, otherwise defaultValue
+ * @returns parameter if the parameter was a boolean, otherwise defaultValue
  */
 function getBooleanParameter(parameter: any, defaultValue: boolean): boolean {
     if (parameter === undefined)
@@ -295,7 +295,7 @@ app.use('/login', (req, res) => {
 });
 
 // For when after the user has logged in
-// token is already known from local storage of the webstie and the user provided the password.
+// token is already known from local storage of the website and the user provided the password.
 app.use('/verifyUser', (req, res) => {
     db.runPredefinedQuery("verifyUser", [req.body.token, req.body.password])
         .then(query_result => {
@@ -310,7 +310,7 @@ app.use('/verifyUser', (req, res) => {
 });
 
 app.use('/checkout', async (req, res) => {
-    // Santiize the three inputs, user_id, address and bankNumber
+    // Sanitize the three inputs, user_id, address and bankNumber
     let user_id = getIntParameter(req.body.token, -1, -1, 10000000);
     let address = req.body.address;
     if (address == null || address.trim() == "") {

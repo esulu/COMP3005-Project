@@ -81,8 +81,8 @@ class Database {
     /**
      *  Function runs a predefined query file under /SQL/Queries/queryName and returns the result of the query
      * @param queryName The name of the query under /SQL/Queries/{queryName}
-     * @param parameters Any paramters required to be set in the query file
-     * @param client Optionaly, the client database (pool.client) to ensure a single transaction occurs to the database
+     * @param parameters Any parameters required to be set in the query file
+     * @param client Optionally, the client database (pool.client) to ensure a single transaction occurs to the database
      * Only provide this if this function is being used under runTransaction()
      * @returns QueryResult of the predefined query
      */

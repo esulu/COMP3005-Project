@@ -1,7 +1,7 @@
 import { Fragment, useState } from "react";
 import { Grid, Typography, Button, Stack, Alert, Collapse, IconButton } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
-import { BookData } from "..";
+import { BookData, UseToken } from "..";
 
 interface BookProp {
     bookData: BookData,
@@ -14,6 +14,9 @@ export const BookView = (props: BookProp) => {
     // Alert button
     const [open, setOpen] = useState(false);
 
+    // Get token to link to the correct cart ID
+    const { token } = UseToken();
+
     // Increase the quantity up to the maximum available copies
     const incrementQuantity = () => {
         if (quantity < props.bookData.quantity)
@@ -22,16 +25,17 @@ export const BookView = (props: BookProp) => {
 
     // Decrement the quantity down to 0
     const decrementQuantity = () => {
-        if (quantity > 0)
+        if (quantity > 1)
             setQuantity(quantity - 1);
     }
 
     // Add the books to the user's cart
     const addToCart = async () => {
-        // const response = await fetch(`http://localhost:5000/`);
-        // const jsonData = await response.json();
-        // console.log(jsonData);
-        console.log("added to cart " + quantity + " books");
+        await fetch(`http://localhost:5000/addToCart`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart_id: token, isbn: props.bookData.isbn, quantity })
+        });
         setOpen(true);
     }
 

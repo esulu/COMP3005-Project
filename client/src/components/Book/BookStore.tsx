@@ -50,12 +50,14 @@ export const BookStore = ({ searchRequest }: Props) => {
     // Update page/book store content per each page change
     useEffect(() => {
         getPage();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page]);
 
     // Update results when a new search request is made
     useEffect(() => {
         setPage(0);
         getPage();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchRequest]);
 
     const isbnReducer = (previous: string, current: BookType) => { return previous + current.isbn };

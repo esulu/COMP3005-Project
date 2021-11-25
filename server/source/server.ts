@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import pg from 'pg'
-import { getDB, makeResponse, QueryResult, Transaction } from './db'
+import { getDB, makeResponse, QueryResult, QueryCreatorReturnType } from './db'
 import _ from 'lodash'
 
 const port = 5000;
@@ -229,11 +229,11 @@ app.use('/verifyUser', (req, res) => {
 app.use('/checkout', async (req, res) => {
     let user_id = getIntParameter(req.body.token, -1, -1, 10000000);
 
-    async function doCheckout(client:pg.PoolClient) : Promise<[boolean, string]>{
+    async function doCheckout(client:pg.PoolClient) : Promise<QueryCreatorReturnType>{
         // Whenever we run a query in our transaction, it shouldn't return an empty table
         let insureIntegrity = (query:QueryResult) => {
             if (query.rowCount === 0)
-                throw "Empty data was returned, this is most likely due to the user not having anything in their cart.";
+                throw "During the transaction, empty data was returned, does the user have a cart?";
         }
         try {
             // Get the warehouse key
@@ -254,25 +254,21 @@ app.use('/checkout', async (req, res) => {
             let insertCart = await db.runPredefinedQuery("insertCart", [], client);
             insureIntegrity(insertCart);
             let new_cart_id = insertCart.rows[0].cart_id;
-            console.log(new_cart_id);
-            (await db.runTransactions([{
-                // Insert the new order tuple
-                predefinedQuery: "insertOrder",
-                parameters: [req.body.address, req.body.bankNumber, shipping_id, user_id, cart_id]
-            }, {
-                // set the user to the new cart
-                predefinedQuery: "setUserCart",
-                parameters: [new_cart_id, user_id]
-            }])).forEach( t => insureIntegrity(t));
+
+            // Insert the order tuple
+            insureIntegrity(await db.runPredefinedQuery("insertOrder", [req.body.address, req.body.bankNumber, shipping_id, user_id, cart_id], client));
+            // Change the user's cart id to a new cart.
+            insureIntegrity(await db.runPredefinedQuery("setUserCart", [new_cart_id, user_id], client));
+            
         } catch(error:any) {
-            return [true, error];
+            return {hasErrors:true, error:error};
         }
-        return [false, ""];
+        return {hasErrors:false};
     }
 
     db.runTransaction(doCheckout)
         .then( () => {
-            res.json({ status:200})
+            res.json({status:200})
         }).catch( err => {
             console.log(err);
             res.json({status:400, error:err})

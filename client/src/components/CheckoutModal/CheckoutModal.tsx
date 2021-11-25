@@ -7,7 +7,7 @@ import Modal from '@mui/material/Modal';
 import Fade from '@mui/material/Fade';
 import Button from '@mui/material/Button';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import {CheckoutView} from "./CheckoutView"
+import { CheckoutView } from "./CheckoutView"
 
 
 const style = {
@@ -30,7 +30,18 @@ export const CheckoutModal = () => {
 
     return (
         <div>
-            <Button onClick={handleOpen} variant="outlined"><ShoppingCartIcon></ShoppingCartIcon> Checkout</Button>
+            <Button
+                onClick={handleOpen}
+                variant="contained"
+                color="success"
+                sx={{
+                    width: "60%",
+                    marginLeft: "20%"
+                }}
+            >
+                <ShoppingCartIcon />
+                Checkout
+            </Button>
             <Modal
                 aria-labelledby="transition-modal-title"
                 aria-describedby="transition-modal-description"

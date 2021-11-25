@@ -23,7 +23,7 @@ export const BookView = (props: BookProp) => {
             setQuantity(quantity + 1);
     }
 
-    // Decrement the quantity down to 0
+    // Decrement the quantity down to 1
     const decrementQuantity = () => {
         if (quantity > 1)
             setQuantity(quantity - 1);

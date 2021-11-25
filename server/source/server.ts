@@ -277,6 +277,18 @@ app.use('/addToCart', (req, res) => {
     }
 });
 
+// Get all book data from a user's cart
+app.use('/getCart', (req, res) => {
+    try {
+        db.runPredefinedQuery("getCart", [Number(req.query.cart_id)])
+            .then(query_result => {
+                res.json(query_result["rowCount"] == 0 ? {} : query_result["rows"]);
+            });
+    } catch (error: any) {
+        console.log(error.message);
+    }
+});
+
 // |--------------------|
 // | Login              |
 // |--------------------|
@@ -300,9 +312,9 @@ app.use('/verifyUser', (req, res) => {
     db.runPredefinedQuery("verifyUser", [req.body.token, req.body.password])
         .then(query_result => {
             if (query_result["rowCount"] == 0)
-                res.json({status:400, text:"Either the provided token doesn't exist or the password is incorrect"});
+                res.json({ status: 400, text: "Either the provided token doesn't exist or the password is incorrect" });
             else
-                res.json({ status:200, text:"" });
+                res.json({ status: 200, text: "" });
         })
         .catch(error => {
             console.log(error);
@@ -314,37 +326,37 @@ app.use('/checkout', async (req, res) => {
     let user_id = getIntParameter(req.body.token, -1, -1, 10000000);
     let address = req.body.address;
     if (address == null || address.trim() == "") {
-        res.json({status:400, error:"Address must be specified"});
+        res.json({ status: 400, error: "Address must be specified" });
         return;
     }
     address = address.toString().trim();
     if (address.length > 60) {
-        res.json({status:400, error:"Address is too long!"});
+        res.json({ status: 400, error: "Address is too long!" });
         return;
     }
 
     let bankNumber = req.body.bankNumber;
     if (bankNumber === null || bankNumber.trim() == "") {
-        res.json({status:400, error:"A bank number must be provided"});
+        res.json({ status: 400, error: "A bank number must be provided" });
         return;
     }
     bankNumber = bankNumber.toString().trim();
     if (bankNumber.length > 20) {
-        res.json({status:400, error:"The bank number is too long!"});
+        res.json({ status: 400, error: "The bank number is too long!" });
         return;
     }
 
 
     // Whenever we run a query in our transaction, it shouldn't return an empty table
-    const insureIntegrity = (query:QueryResult) => {
+    const insureIntegrity = (query: QueryResult) => {
         if (query.rowCount === 0)
             throw "During the transaction, empty data was returned, does the user have a cart?";
     }
 
-    let cart_id:number; // we use this in both functions, might as well do the query once.
+    let cart_id: number; // we use this in both functions, might as well do the query once.
 
     // Before we do the queries, we should ensure that the cart of the user actually has data in it
-    async function ensureBooksInCart(client:pg.PoolClient): Promise<QueryCreatorReturnType> {
+    async function ensureBooksInCart(client: pg.PoolClient): Promise<QueryCreatorReturnType> {
         try {
             // Get the cart key
             let carts = await db.runPredefinedQuery("userCarts", [user_id], client);
@@ -357,15 +369,15 @@ app.use('/checkout', async (req, res) => {
             if (parseInt(num.rows[0].quantity) === 0)
                 throw "There are no books in the cart.";
 
-        } catch(error:any) {
-            return {hasErrors:true, error:error};
+        } catch (error: any) {
+            return { hasErrors: true, error: error };
         }
-        return {hasErrors:false};
+        return { hasErrors: false };
     }
 
     // query function to run in transaction
-    async function doCheckout(client:pg.PoolClient) : Promise<QueryCreatorReturnType>{
-        
+    async function doCheckout(client: pg.PoolClient): Promise<QueryCreatorReturnType> {
+
         try {
             // Get the warehouse key
             let warehouses = await db.runPredefinedQuery("warehouses", [], client);
@@ -373,7 +385,7 @@ app.use('/checkout', async (req, res) => {
             let warehouse_id = warehouses.rows[0].warehouse_id;
 
             // Create a shipping tuple and get the key
-            let insertShipping = await db.runPredefinedQuery("insertShipping", [_.sample(db.shippingCompanies), db.shippingStatuses[0],warehouse_id]);
+            let insertShipping = await db.runPredefinedQuery("insertShipping", [_.sample(db.shippingCompanies), db.shippingStatuses[0], warehouse_id]);
             insureIntegrity(insertShipping);
             let shipping_id = insertShipping.rows[0].shipping_id;
             // Create a new cart
@@ -385,27 +397,27 @@ app.use('/checkout', async (req, res) => {
             insureIntegrity(await db.runPredefinedQuery("insertOrder", [address, bankNumber, shipping_id, user_id, cart_id], client));
             // Change the user's cart id to a new cart.
             insureIntegrity(await db.runPredefinedQuery("setUserCart", [new_cart_id, user_id], client));
-            
-        } catch(error:any) {
-            return {hasErrors:true, error:error};
+
+        } catch (error: any) {
+            return { hasErrors: true, error: error };
         }
-        return {hasErrors:false};
+        return { hasErrors: false };
     }
 
     // Now run the transactions, first ensuring there are actually books in the cart
     db.runTransaction(ensureBooksInCart)
-        .then( () => {
+        .then(() => {
             // Now perform the checkout
             db.runTransaction(doCheckout)
-                .then( () => res.json({status:200}))
+                .then(() => res.json({ status: 200 }))
                 .catch(err => {
                     console.log(err);
-                    res.json({status:400, error:err});
+                    res.json({ status: 400, error: err });
                 });
-        }).catch( err => {
+        }).catch(err => {
             // User didn't have books, this should be handled by the client(?)
             console.log("FATAL error : " + err);
-            res.json({status:400, error:err});
+            res.json({ status: 400, error: err });
         });
 });
 

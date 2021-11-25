@@ -45,6 +45,7 @@ export const BookView = (props: BookProp) => {
                     </Typography>
                 </Grid>
                 <Grid item xs={4}>
+                    {/* TODO: Implement this */}
                     <Typography id="modal-modal-cart-text" variant='h5' sx={{ mt: 2 }}>
                         Add to cart
                     </Typography>

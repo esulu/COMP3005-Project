@@ -1,4 +1,4 @@
-import React, { Fragment, FunctionComponent } from "react";
+import React, { Fragment, FunctionComponent, useState } from "react";
 import { Tabs, Tab } from "@mui/material";
 import { Store, Orders, Cart } from "../../pages";
 import { RouteComponentProps } from "react-router";
@@ -32,7 +32,7 @@ export const NavBar: FunctionComponent<RouteComponentProps> = props => {
         cart: 2
     }
 
-    const [selectedTab, setSelectedTab] = React.useState(tabNameToIndex[page]);
+    const [selectedTab, setSelectedTab] = useState(tabNameToIndex[page]);
 
     // Change the selected tab
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {

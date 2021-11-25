@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS publisher
     publisher_name VARCHAR(100) NOT NULL,
     publisher_address VARCHAR(60) NOT NULL,
     publisher_email VARCHAR(100) NOT NULL,
-    order_bank_number VARCHAR(20) NOT NULL
+    publisher_bank_number VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS inst_phone

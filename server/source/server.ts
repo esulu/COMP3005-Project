@@ -52,6 +52,24 @@ function getStringParameter(parameter: any, acceptedValues: string[] = [], defau
 
 }
 
+/**
+ * function takes a parameter from a query string, usually from req.query.(parameter) and returns a boolean
+ * @param parameter The parameter given from req.query.parameter
+ * @param defaultValue The default value to give parameter if the given value is invalid
+ * @returns parameter if the paramater was a boolean, otherwise defaultValue
+ */
+function getBooleanParameter(parameter: any, defaultValue: boolean): boolean {
+    if (parameter === undefined)
+        return defaultValue;
+    if (typeof parameter == "boolean")
+        return parameter;
+    if (typeof parameter === 'string' || parameter instanceof String) {
+        if (parameter.toLowerCase().trim() === "true") return true;
+        if (parameter.toLowerCase().trim() === "false") return false;
+    }
+    return defaultValue;
+}
+
 // -------------------------------------------------------------------------------------
 // Routes
 // -------------------------------------------------------------------------------------
@@ -60,16 +78,14 @@ app.get('/authors', (req, res) => {
 
     let limit = getIntParameter(req.query.limit, 10000);
     let offset = getIntParameter(req.query.offset, 0);
-
-    try {
-        db.runPredefinedQuery("authors", [limit, offset])
-            .then(query_result => {
-                res.json(query_result)
-            });
-    } catch (error: any) {
-        console.log(error.message);
-        res.json(makeResponse([]));
-    }
+    db.runPredefinedQuery("authors", [limit, offset])
+        .then(query_result => {
+            res.json(query_result)
+        })
+        .catch(error => {
+            console.log(error.message);
+            res.json(makeResponse([]));
+        });
 });
 
 interface BooksType {
@@ -108,6 +124,8 @@ app.get('/books', async (req, res) => {
     let ordering = getStringParameter(req.query.ordering, ["asc", "desc"], "asc");
     let order_by = getStringParameter(req.query.order_by, ["price", "year"]);
 
+    let purchasables_only = getBooleanParameter(req.query.purchasables_only, true);
+
     let parameters: any = [];
     let parameterNumber = 1;
 
@@ -120,9 +138,9 @@ app.get('/books', async (req, res) => {
      * @param extraLocation The location the extra string information is put either values "left" or "right"
      * @returns returns a string of "[extra] attributes parameterNumber [extra]
      */
-    let addParam = (attribute: string, paramValue: string, paramIsNumber: boolean = false, extra: string = "", extraLocation: string = "left") => {
+    let addParam = (attribute: string, paramValue: string, paramIsNumber: boolean = false, extra: string = "") => {
         if (paramValue === "") return "";
-        let parameter = extraLocation == "left" ? `${extra} ${attribute} $${parameterNumber}` : `${attribute} $${parameterNumber} ${extra}`;
+        let parameter = `${extra} ${attribute} $${parameterNumber}`;
         ++parameterNumber;
         parameters.push(paramIsNumber ? parseInt(paramValue) : paramValue);
         return parameter;
@@ -142,14 +160,15 @@ app.get('/books', async (req, res) => {
         NATURAL JOIN written_by_no_dups
         NATURAL JOIN author
         WHERE 1=1 
+            ${purchasables_only ? addParam("is_purchasable =", "true", false, "AND") : "AND is_purchasable IS NOT NULL"}
             ${addParam("author_name =", author, false, "AND")}
             ${addParam("title = ", title, false, "AND")}
             ${addParam("isbn = ", isbn, false, "AND")}
             ${addParam("genre = ", genre, false, "AND")}
-        ${""/*addParam("ORDER BY", order_by, false, ordering, "right")*/}
         ${addParam("LIMIT", limit.toString(), true)}
         ${addParam("OFFSET", offset.toString(), true)}
         `;
+
         let queryData = (await db.pool.query(query, parameters)).rows;
         if (order_by !== "")
             queryData.sort((lhs: BooksType, rhs: BooksType) => {
@@ -168,8 +187,9 @@ app.get('/book/:isbn', (req, res) => {
         .then(query_result => {
             // no need to have number of rows or row array if are looking for the isbn
             // however there could be multiple authors of which we should return
+
             if (query_result.rowCount == 0) {
-                res.json(makeResponse([]));
+                res.json({});
                 return;
             }
 
@@ -195,9 +215,58 @@ app.get('/book/:isbn', (req, res) => {
         })
         .catch(error => {
             console.log(error.message);
-            res.json(makeResponse([]));
+            res.json({});
         })
 });
+
+// |--------------------|
+// | Search Bar         |
+// |--------------------|
+
+// Retrieve all titles
+app.get('/getTitles', (req, res) => {
+    try {
+        db.runPredefinedQuery("getTitles", [])
+            .then(query_result => { res.json(query_result["rows"]); });
+    } catch (error: any) {
+        console.log(error.message);
+    }
+});
+
+// Retrieve all Authors
+app.get('/getAuthors', (req, res) => {
+    try {
+        db.runPredefinedQuery("getAuthors", [])
+            .then(query_result => { res.json(query_result["rows"]); });
+    } catch (error: any) {
+        console.log(error.message);
+    }
+});
+
+// Retrieve all ISBNs
+app.get('/getIsbns', (req, res) => {
+    try {
+        db.runPredefinedQuery("getIsbns", [])
+            .then(query_result => { res.json(query_result["rows"]); });
+    } catch (error: any) {
+        console.log(error.message);
+    }
+});
+
+// Retrieve all Genres
+app.get('/getGenres', (req, res) => {
+    try {
+        db.runPredefinedQuery("getGenres", [])
+            .then(query_result => { res.json(query_result["rows"]); });
+    } catch (error: any) {
+        console.log(error.message);
+    }
+});
+
+// |--------------------|
+// | Login              |
+// |--------------------|
+
 
 // login handler that returns a token if the credentials are valid
 app.use('/login', (req, res) => {

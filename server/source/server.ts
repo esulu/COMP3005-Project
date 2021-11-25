@@ -227,8 +227,31 @@ app.use('/verifyUser', (req, res) => {
 });
 
 app.use('/checkout', async (req, res) => {
+    // Santiize the three inputs, user_id, address and bankNumber
     let user_id = getIntParameter(req.body.token, -1, -1, 10000000);
+    let address = req.body.address;
+    if (address == null || address.trim() == "") {
+        res.json({status:400, error:"Address must be specified"});
+        return;
+    }
+    address = address.toString().trim();
+    if (address.length > 60) {
+        res.json({status:400, error:"Address is too long!"});
+        return;
+    }
 
+    let bankNumber = req.body.bankNumber;
+    if (bankNumber === null || bankNumber.trim() == "") {
+        res.json({status:400, error:"A bank number must be provided"});
+        return;
+    }
+    bankNumber = bankNumber.toString().trim();
+    if (bankNumber.length > 20) {
+        res.json({status:400, error:"The bank number is too long!"});
+        return;
+    }
+
+    // query function to run in transaction
     async function doCheckout(client:pg.PoolClient) : Promise<QueryCreatorReturnType>{
         // Whenever we run a query in our transaction, it shouldn't return an empty table
         let insureIntegrity = (query:QueryResult) => {
@@ -256,7 +279,7 @@ app.use('/checkout', async (req, res) => {
             let new_cart_id = insertCart.rows[0].cart_id;
 
             // Insert the order tuple
-            insureIntegrity(await db.runPredefinedQuery("insertOrder", [req.body.address, req.body.bankNumber, shipping_id, user_id, cart_id], client));
+            insureIntegrity(await db.runPredefinedQuery("insertOrder", [address, bankNumber, shipping_id, user_id, cart_id], client));
             // Change the user's cart id to a new cart.
             insureIntegrity(await db.runPredefinedQuery("setUserCart", [new_cart_id, user_id], client));
             

@@ -36,16 +36,19 @@ export const CheckoutView = () => {
         let verifyResponse = await fetch("http://localhost:5000/verifyUser", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 "token": getToken(),
-                password })
-        }).catch( e => {
-            setAlert({alertType:"error", alertTitle:"Error", alertDescription:e.message, isOpen:true});
+                password
+            })
+        }).catch(e => {
+            setAlert({ alertType: "error", alertTitle: "Internal Server Error", alertDescription: e.message, isOpen: true });
         })
         if (!verifyResponse) return;
 
-        if (verifyResponse["status"] !== 200) {
-            setAlert({alertType:"error", alertTitle:"Error", alertDescription:"Incorrect password", isOpen:true});
+        let verifyRes = await verifyResponse.json()
+
+        if (verifyRes.status !== 200) {
+            setAlert({ alertType: "error", alertTitle: "Authentication Error", alertDescription: "Incorrect password", isOpen: true });
             return;
         }
 
@@ -57,11 +60,33 @@ export const CheckoutView = () => {
                 address: address,
                 bankNumber: bankNumber,
             })
-        }).catch( e => {
-            setAlert({alertType:"error", alertTitle:"Error", alertDescription:e.message, isOpen:true});
+        }).catch(e => {
+            setAlert({
+                alertType: "error",
+                alertTitle: "Internal Server Error",
+                alertDescription: e.message,
+                isOpen: true
+            });
         });
         if (!checkoutResponse) return;
 
+        let checkoutRes = await checkoutResponse.json();
+        if (checkoutRes.status !== 200) {
+            setAlert({
+                alertType: "error",
+                alertTitle: `Server Error ${checkoutRes.status}`,
+                alertDescription: checkoutRes.error.length >= 50 ? "A server issue occured while checking out" : checkoutRes.error,
+                isOpen: true
+            });
+            console.log(checkoutRes.error);
+            return;
+        }
+        setAlert({
+            alertType: "success",
+            alertTitle: "Order completed",
+            alertDescription: "The order has been successfully completed!",
+            isOpen: true
+        });
 
 
 
@@ -81,7 +106,7 @@ export const CheckoutView = () => {
                     Enter address:
                 </Typography>
                 <TextField
-                    sx = {textFieldStyle}
+                    sx={textFieldStyle}
                     required
                     id="filled-required"
                     label="Required"
@@ -89,18 +114,18 @@ export const CheckoutView = () => {
                     onChange={event => setAddress(event.target.value)}
                 />
             </Box>
-            
+
             <Box sx={boxStyle} m={1}>
                 <Typography gutterBottom>
                     Enter Bank account number:
                 </Typography>
                 <TextField
-                    sx = {textFieldStyle}
+                    sx={textFieldStyle}
                     required
                     id="filled-required"
                     label="Required"
                     variant="filled"
-                    onChange = {event => setBankNumber(event.target.value)}
+                    onChange={event => setBankNumber(event.target.value)}
                 />
             </Box>
             <Box sx={boxStyle} m={1}>
@@ -108,16 +133,16 @@ export const CheckoutView = () => {
                     Re-enter password for verification:
                 </Typography>
                 <TextField
-                    sx = {textFieldStyle}
+                    sx={textFieldStyle}
                     id="filled-password-input"
                     label="Password"
                     type="password"
                     autoComplete="current-password"
                     variant="filled"
-                    onChange = {event => setPassword(event.target.value)}
+                    onChange={event => setPassword(event.target.value)}
                 />
             </Box>
-            <Typography align='center'>
+            <Typography align='center' sx={{marginBottom:2}}>
                 <Button variant="outlined" onClick={onConfirm}>Confirm checkout</Button>
             </Typography>
             {alert && <CheckoutAlert alertProps={alert} onClose={onAlertClose}></CheckoutAlert>}

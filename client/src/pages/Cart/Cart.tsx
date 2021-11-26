@@ -17,8 +17,8 @@ export const Cart = () => {
     const [cart, setCart] = useState<CartType[] | undefined>(undefined);
 
     // Total value in cart
-    let tot = 0;
     const [grandTotal, setGrandTotal] = useState(0);
+    let currTotal = 0;
 
     // Get the books in the user's cart
     const getCart = async () => {
@@ -33,12 +33,8 @@ export const Cart = () => {
 
     // Update grand total
     const updateTotal = (bookTotal: number) => {
-        // TODO: find a better method for this...
-        console.log(tot + " | " + grandTotal)
-        console.log('update: ' + tot + " + " + bookTotal + " = " + (tot + bookTotal))
-        tot += bookTotal; 
-        setGrandTotal(grandTotal + tot)
-        console.log('total now: ' + tot)
+        currTotal += bookTotal; 
+        setGrandTotal(grandTotal + currTotal)
     }
 
     useEffect(() => {

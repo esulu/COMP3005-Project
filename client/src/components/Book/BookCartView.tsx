@@ -67,7 +67,7 @@ export const BookCartView = (props: BookProp) => {
         // Call parent function to update the cart list
         props.onDelete();
 
-        // Update the grand total
+        // Remove current book from the grand total
         if (bookData !== undefined)
             props.updateTotal(-1 * quantity * bookData.price);
     }

@@ -122,7 +122,7 @@ export const CheckoutView = () => {
                 <TextField
                     sx={textFieldStyle}
                     required
-                    id="filled-required"
+                    className="filled-required"
                     label="Required"
                     variant="filled"
                     onChange={event => setAddress(event.target.value)}
@@ -137,7 +137,7 @@ export const CheckoutView = () => {
                 <TextField
                     sx={textFieldStyle}
                     required
-                    id="filled-required"
+                    className="filled-required"
                     label="Required"
                     variant="filled"
                     onChange={event => setBankNumber(event.target.value)}

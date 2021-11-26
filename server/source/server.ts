@@ -267,10 +267,20 @@ app.get('/getGenres', (req, res) => {
 // | Cart               |
 // |--------------------|
 
-// User adds a book to their cart from the store page - update quantity if the book is already in the cart
+// User adds a book to their cart - update quantity if the book is already in the cart
 app.use('/addToCart', (req, res) => {
     try {
         db.runPredefinedQuery("addToCart", [req.body.isbn, req.body.cart_id, req.body.quantity]);
+        res.json("Success!");
+    } catch (error: any) {
+        console.log(error.message);
+    }
+});
+
+// Delete the given book from the user's cart
+app.use('/removeFromCart', (req, res) => {
+    try {
+        db.runPredefinedQuery("removeFromCart", [req.body.isbn, req.body.cart_id]);
         res.json("Success!");
     } catch (error: any) {
         console.log(error.message);

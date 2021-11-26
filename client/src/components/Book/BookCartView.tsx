@@ -6,7 +6,10 @@ import { BookData } from "..";
 // Types for the prop
 interface BookProp {
     ISBN: string,
-    quantity: number
+    quantity: number,
+    cart_ID: number,
+    onDelete: () => Promise<void>;
+    updateTotal: (bookTotal: number) => void;
 }
 
 export const BookCartView = (props: BookProp) => {
@@ -22,34 +25,55 @@ export const BookCartView = (props: BookProp) => {
         const response = await fetch(`http://localhost:5000/book/${props.ISBN}`);
         const jsonData = await response.json();
         setBookData(jsonData);
+
+        // Set the initial grand total amount for the cart
+        props.updateTotal(quantity * jsonData.price);
     }
 
     // Increase the quantity up to the maximum available copies
     const incrementQuantity = () => {
-        if (bookData !== undefined && quantity < bookData.quantity)
+        if (bookData !== undefined && quantity < bookData.quantity) {
             setQuantity(quantity + 1);
+            props.updateTotal(bookData.price);
+        }
     }
 
     // Decrement the quantity down to 1
     const decrementQuantity = () => {
-        if (quantity > 1)
+        if (bookData !== undefined && quantity > 1) {
             setQuantity(quantity - 1);
+            props.updateTotal(-1 * bookData.price);
+        }
     }
 
     // Update the quantity for this book
     const updateQuantity = async () => {
-        console.log('quantity update');
+        await fetch(`http://localhost:5000/addToCart`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart_id: props.cart_ID, isbn: props.ISBN, quantity })
+        });
         setOpen(true);
     }
 
     // Remove this book from the cart
     const removeBook = async () => {
-        console.log('remove book');
-        setOpen(true);
+        await fetch(`http://localhost:5000/removeFromCart`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cart_id: props.cart_ID, isbn: props.ISBN })
+        });
+
+        // Call parent function to update the cart list
+        props.onDelete();
+
+        // Update the grand total
+        if (bookData !== undefined)
+            props.updateTotal(-1 * quantity * bookData.price);
     }
 
     useEffect(() => {
-        getBookData()
+        getBookData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

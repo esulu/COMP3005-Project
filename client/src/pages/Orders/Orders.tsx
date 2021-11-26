@@ -1,5 +1,9 @@
-import React from "react";
+
+import { OrderTable } from "./OrderTable";
 
 export const Orders = () => {
-    return <div>Orders</div>
+    return (
+        <OrderTable />
+    );
+    
 }

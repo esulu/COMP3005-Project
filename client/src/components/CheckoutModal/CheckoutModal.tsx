@@ -9,6 +9,10 @@ import Button from '@mui/material/Button';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { CheckoutView } from "./CheckoutView"
 
+// Types for the prop
+export interface CheckoutProp {
+    onCheckout: () => Promise<void>;
+}
 
 const style = {
     position: 'absolute' as 'absolute',
@@ -23,7 +27,7 @@ const style = {
 };
 
 
-export const CheckoutModal = () => {
+export const CheckoutModal = (props: CheckoutProp) => {
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
@@ -55,7 +59,7 @@ export const CheckoutModal = () => {
             >
                 <Fade in={open}>
                     <Box sx={style}>
-                        <CheckoutView></CheckoutView> {/* Inside here is the view of our checkout screen */}
+                        <CheckoutView onCheckout={props.onCheckout}></CheckoutView> {/* Inside here is the view of our checkout screen */}
                     </Box>
                 </Fade>
             </Modal>

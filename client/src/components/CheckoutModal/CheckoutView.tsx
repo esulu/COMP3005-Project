@@ -4,6 +4,7 @@ import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { CheckoutAlert, AlertProps } from "./CheckoutAlert";
+import { CheckoutProp } from "..";
 
 // Style for every box
 const boxStyle = {
@@ -19,9 +20,15 @@ const textFieldStyle = {
     width: "17.5rem"
 }
 
+function sleep(delay = 0) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, delay);
+    });
+}
+
 // Function provides a view for a checkout
 // The user can enter information and confirm checkout to the server
-export const CheckoutView = () => {
+export const CheckoutView = (props: CheckoutProp) => {
     // states
     const [address, setAddress] = useState("");
     const [bankNumber, setBankNumber] = useState("");
@@ -99,7 +106,9 @@ export const CheckoutView = () => {
             isOpen: true
         });
 
-
+        // Call the parent function to alert of a successful order
+        await sleep(2500);
+        props.onCheckout();
 
     }
 
@@ -161,7 +170,7 @@ export const CheckoutView = () => {
             </Box>
 
             {/* Button on confirm*/}
-            <Typography align='center' sx={{marginBottom:2}}>
+            <Typography align='center' sx={{ marginBottom: 2 }}>
                 <Button variant="outlined" onClick={onConfirm}>Confirm checkout</Button>
             </Typography>
 

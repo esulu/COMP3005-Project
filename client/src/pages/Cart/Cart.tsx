@@ -80,7 +80,7 @@ export const Cart = () => {
                                 Grand Total: ${grandTotal.toFixed(2)}
                             </Typography>
                         </Box>
-                        <CheckoutModal></CheckoutModal>
+                        <CheckoutModal onCheckout={getCart}></CheckoutModal>
                     </Stack>
                 ) : (
                     <Typography id="cart-information" marginLeft="20%" sx={{ mt: 2 }}>

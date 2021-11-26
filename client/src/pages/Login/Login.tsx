@@ -36,7 +36,7 @@ export const Login = ({ setToken }: Props) => {
             .then(response => response.json())
             .then(data => {
                 if (Object.keys(data).length === 0) {   // Failed login; set token to -1 
-                    setToken({token:-1});
+                    setToken({token:-1, is_owner:false});
                 } else {                                // Success; set user token
                     setToken(data);
                 }

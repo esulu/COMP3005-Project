@@ -1,4 +1,3 @@
-import * as React from 'react';
 import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -7,15 +6,18 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
 import TableRow from '@mui/material/TableRow';
-import { switchClasses } from '@mui/material';
+import { useState, useEffect } from "react";
+import { UseToken } from "../../components";
 
 /*
-Majority of the code comes from https://mui.com/components/tables
+Code architecture comes from https://mui.com/components/tables
+but modified to suit orders
 */
 
+// Each column
 interface Column {
-  id: 'Tracking Number' | 'Shipping Company' | 'Order Status' | 'Order Date' | 'Shipped to Address';
-  label: string;
+  id: 'Tracking Number' | 'Shipping Company' | 'Order Status' | 'Order Date' | 'Shipped to Address'; // Each possible column table (is actually the key)
+  label: string; // Name/label of the column
   minWidth?: number;
   align?: 'right';
   format?: (value: number) => string;
@@ -37,25 +39,24 @@ const columns: readonly Column[] = [
     label: 'Order Status',
     minWidth: 170,
     align: 'right',
-    //format: (value: number) => value.toLocaleString('en-US'),
   },
   {
     id: 'Order Date',
     label: 'Order Date',
     minWidth: 170,
     align: 'right',
-    //format: (value: number) => value.toLocaleString('en-US'),
   },
   {
     id: 'Shipped to Address',
     label: 'Shipped to Address',
     minWidth: 170,
     align: 'right',
-    //format: (value: number) => value.toFixed(2),
   },
 ];
 
-function columnDataMapper(column: Column) : string {
+// Maps a column name to a data name
+// Required for going through a row of a data column and determining which item to output.
+function columnDataMapper(column: Column): string {
   switch (column.id) {
     case 'Tracking Number': return "order_id";
     case 'Shipping Company': return "company_name";
@@ -66,50 +67,63 @@ function columnDataMapper(column: Column) : string {
   }
 }
 
-
+// Interface for data that comes from the server
+// Matches exact response from the server
 interface Data {
   order_id: string;
   company_name: string;
   status: string;
   order_date: string;
   order_address: string;
-  [name:string] : string;
+  [name: string]: string;
 }
 
-const rows : Data[] = [
-  {
-    order_id: '1',
-    order_date: '2021-11-25T05:00:00.000Z',
-    order_address: 'oaskd@gmail.com',
-    company_name: 'Intact Courier',
-    status: 'Received'
-  } ,
-  {
-    order_id: '2',
-    order_date: '2021-11-26T05:00:00.000Z',
-    order_address: 'dsadad',
-    company_name: 'Canada Post',
-    status: 'Received'
-  }
-];
-
 export const OrderTable = () => {
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const { token } = UseToken(); // token verifies which user this order table is for
+  const [orders, setOrders] = useState<Data[]>([]);
 
+  // states for moving pages
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  
+
+  // Functions for moving the pages
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
-
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
 
+  // Function gets the order data respective to the user's id/token
+  // and fills the orders state
+  const getOrderData = async () => {
+    let response = await fetch("http://localhost:5000/orderInfo", {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })});
+
+      let data = (await response.json()).rows;
+      data = data.map( (obj: Data) => {
+        obj.order_date = new Date(obj.order_date).toDateString();
+        return obj;
+      });
+
+      setOrders(data);
+  }
+
+  // Only get orders once
+  useEffect(() => {
+    getOrderData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <Paper sx={{ width: '100%', overflow: 'hidden' }}>
       <TableContainer sx={{ maxHeight: 440 }}>
         <Table stickyHeader aria-label="sticky table">
+          {/* Table headers, are the columns we defined above */}
           <TableHead>
             <TableRow>
               {columns.map((column) => (
@@ -123,12 +137,13 @@ export const OrderTable = () => {
               ))}
             </TableRow>
           </TableHead>
+          {/* Output all orders given from the state */}
           <TableBody>
-            {rows
+            {orders
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => {
                 return (
-                  <TableRow hover role="checkbox" tabIndex={-1} key={0}>
+                  <TableRow hover role="checkbox" tabIndex={-1} key={`order-${row.order_id}`}>
                     {columns.map((column) => {
                       const value = row[columnDataMapper(column)];
                       return (
@@ -143,10 +158,11 @@ export const OrderTable = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      {/* Enables page movement in the table in bottom right corner */}
       <TablePagination
         rowsPerPageOptions={[10, 25, 100]}
         component="div"
-        count={rows.length}
+        count={orders.length}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}

@@ -3,7 +3,10 @@ import { OrderTable } from "./OrderTable";
 
 export const Orders = () => {
     return (
-        <OrderTable />
+        <>
+            <span className="mt-1"></span>
+            <OrderTable />
+        </>
     );
     
 }

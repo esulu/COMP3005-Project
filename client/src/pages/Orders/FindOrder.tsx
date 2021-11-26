@@ -7,6 +7,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
+import { Alert } from "@mui/material";
 
 // Style for every box
 const boxStyle = {
@@ -27,21 +28,46 @@ interface OrderInterface {
 
 export const FindOrder = () => {
 
+    // Order 
     const [orderNumber, setOrderNumber] = useState("");
     const [order, setOrder] = useState<OrderInterface | undefined>(undefined);
 
+    // dialogs open
+    const [alertOpen, setAlertOpen] = useState(false);    
+    const [orderOpen, setOrderOpen] = useState(false);
+
+    // Find the order based on the orderNumber and set it respectively, also change dialogs
     const onFind = async () => {
-        let response = await fetch(`http://localhost:5000/findOrder?order_id=${orderNumber}`);
+        try {
+            let response = await fetch(`http://localhost:5000/findOrder?order_id=${orderNumber}`);
+            let jsonData = await response.json();
+            if (jsonData.rowCount === 0) {
+                setAlertOpen(true);
+                return;
+            }
+            let obj = jsonData.rows[0];
+            obj.order_date = new Date(obj.order_date).toDateString(); // fix the date
+            setOrder(obj);
+            setOrderOpen(true);
+        } catch(error) {
+            console.log(error);
+        }
+        
     };
 
-    useEffect(() => {
-        onFind();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [orderNumber]);
+    // from https://www.freecodecamp.org/news/how-to-capitalize-words-in-javascript/
+    const upperCaseLettersForWords = (s:string) => {
+        return s.replace(/_/g, ' ').replace(/(^\w{1})|(\s+\w{1})/g, letter => letter.toUpperCase());
+    }
 
+    // Close both dialogs when order number is changed
+    useEffect(() => {
+        setAlertOpen(false);
+        setOrderOpen(false);
+    }, [orderNumber]);
     return (
-        <div>
-            <Typography variant="h3" align="center" gutterBottom>
+        <>
+            <Typography variant="h4" align="center" gutterBottom>
                 Find Order
             </Typography>
             {/* Box container for find order field */}
@@ -62,24 +88,33 @@ export const FindOrder = () => {
             <Typography align='center' sx={{marginBottom:2}}>
                 <Button variant="outlined" onClick={onFind}>Find order</Button>
             </Typography>
-            { order && 
-                <Box>
+
+            {/* Output all order data based on the order object itself */}
+            { order && orderOpen && 
+                <Box sx={boxStyle}>
                     <List>
-                        <ListItem>
-                            <ListItemText primary="order id:" secondary={orderNumber} />
+                        <ListItem >
+                            <ListItemText sx={{display: 'flex', alignItems: 'center', justifyContent: 'center'}} primary={`Order Number:\t${orderNumber.toString()}`} />
                         </ListItem>
                         <Divider />
                         {Object.entries(order).map( entry => {
                             const [key, value] = entry;
                             return (
-                                <ListItem>
-                                    <ListItemText primary={key} secondary={value} />
+                                <ListItem key={`lt-${key} ${value}`}>
+                                    <ListItemText primary={`${upperCaseLettersForWords(key)}:\t${value}`} key={`${key}-${value}`} />
                                 </ListItem>)
                             }
                         )}
                     </List>
                 </Box>
             }
-        </div>
+            { alertOpen &&
+                <Alert severity="error">
+                    {orderNumber === "" ?
+                     "An order number is required" :
+                      "An order with this order number does not exist!"}
+                </Alert>
+            }
+        </>
     )    
 }

@@ -6,16 +6,16 @@ import { Box } from "@mui/system";
 // The data we want to retrieve from the cart
 interface CartType {
     isbn: string,
-    quantity: number
+    quantity: number,
+    cart_id: number,
 }
 
 export const Cart = () => {
-    // Get token to link to the correct cart ID
+    // Get token to link to the correct user ID
     const { token } = UseToken();
 
     // Books in the cart
     const [cart, setCart] = useState<CartType[] | undefined>(undefined);
-
     // Total value in cart
     const [grandTotal, setGrandTotal] = useState(0);
     let currTotal = 0;
@@ -23,7 +23,7 @@ export const Cart = () => {
     // Get the books in the user's cart
     const getCart = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/getCart?cart_id=${token}`);
+            const response = await fetch(`http://localhost:5000/getCart?user_id=${token}`);
             const jsonData = await response.json();
             setCart(jsonData);
         } catch (error) {
@@ -67,7 +67,7 @@ export const Cart = () => {
                                         <BookCartView
                                             ISBN={item.isbn}
                                             quantity={item.quantity}
-                                            cart_ID={Number(token)}
+                                            cart_ID={Number(cart[0].cart_id)/* They all have same cart id */} 
                                             onDelete={getCart}
                                             updateTotal={updateTotal}
                                         ></BookCartView>

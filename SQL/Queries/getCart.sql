@@ -1,5 +1,7 @@
--- Parameters: 1 - cart_ID
+-- Parameters: 1 - user_ID
 
--- Get book data for the given cart ID
-SELECT * FROM contains
-WHERE cart_ID=$1
+-- Get book data for the given user ID
+SELECT * 
+FROM users
+NATURAL JOIN contains
+WHERE user_ID =$1;

@@ -287,16 +287,16 @@ app.use('/removeFromCart', (req, res) => {
     }
 });
 
-// Get all book data from a user's cart
+// Get all book data from a user's cart given a user id
 app.use('/getCart', (req, res) => {
-    try {
-        db.runPredefinedQuery("getCart", [Number(req.query.cart_id)])
-            .then(query_result => {
-                res.json(query_result["rowCount"] == 0 ? {} : query_result["rows"]);
-            });
-    } catch (error: any) {
-        console.log(error.message);
-    }
+    db.runPredefinedQuery("getCart", [Number(req.query.user_id)])
+        .then(query_result => {
+            res.json(query_result["rowCount"] == 0 ? {} : query_result["rows"]);
+        })
+        .catch(err => {
+            res.json({});
+            console.log(err);
+        });
 });
 
 // |--------------------|

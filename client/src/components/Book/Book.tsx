@@ -5,7 +5,8 @@ import { BookView } from './BookView';
 
 // Types for the prop
 interface BookProp {
-    ISBN: string
+    ISBN: string,
+    cart_id: string,
 }
 
 // The data we expect from the json response
@@ -92,7 +93,7 @@ export const Book = (props: BookProp) => {
                             p: 4,
                             background: 'white'
                         }}>
-                            <BookView bookData={bookData} />
+                            <BookView bookData={bookData} cart_id={props.cart_id}/>
                         </Box>
                     </Modal>
                 </Fragment>

@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { query } from 'express'
 import cors from 'cors'
 import pg from 'pg'
 import { getDB, makeResponse, QueryResult, QueryCreatorReturnType } from './db'
@@ -291,12 +291,21 @@ app.use('/removeFromCart', (req, res) => {
 app.use('/getCart', (req, res) => {
     db.runPredefinedQuery("getCart", [Number(req.query.user_id)])
         .then(query_result => {
-            res.json(query_result["rowCount"] == 0 ? {} : query_result["rows"]);
+            res.json(query_result["rowCount"] === 0 ? {} : query_result["rows"]);
         })
         .catch(err => {
             res.json({});
             console.log(err);
         });
+});
+
+app.use('/getCartID', (req, res) => {
+    db.runPredefinedQuery("getCartID", [getIntParameter(req.query.user_id, -1)])
+    .then(query_result => res.json(query_result["rowCount"] === 0 ? {} : query_result["rows"][0]))
+    .catch(err => {
+        res.json({});
+        console.log(err);
+    })
 });
 
 // |--------------------|

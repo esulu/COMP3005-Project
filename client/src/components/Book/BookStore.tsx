@@ -5,6 +5,7 @@ import { Button } from "@mui/material";
 import WestIcon from '@mui/icons-material/West';
 import EastIcon from '@mui/icons-material/East';
 import './BookStore.css'
+import { UseToken } from "..";
 
 const booksPerPage = 20;
 const booksPerRow = 5;
@@ -18,11 +19,13 @@ type Props = {
 }
 
 export const BookStore = ({ searchRequest }: Props) => {
-
+    const {token} = UseToken();
     // states
     const [page, setPage] = useState(0);
     const [books, setBooks] = useState<BookType[][] | undefined>(undefined);
+    const [cartID, setCartID] = useState("");
 
+    
     // Gets the page by using offsets and limit and getting a different set of books to set into our books state
     const getPage = async () => {
         try {
@@ -30,10 +33,21 @@ export const BookStore = ({ searchRequest }: Props) => {
             const jsonData = await response.json();
             const bookChunks: BookType[][] = lodash.chunk(jsonData["rows"], booksPerRow);
             setBooks(bookChunks);
+
         } catch (error) {
             console.log(error);
         }
     };
+
+    const getCartID = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/getCartID?user_id=${token}`);
+            const jsonData = await response.json();
+            setCartID(jsonData.cart_id);
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     // When the nextPage button is clicked, advance one page
     const nextPage = () => {
@@ -53,6 +67,11 @@ export const BookStore = ({ searchRequest }: Props) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page]);
 
+    useEffect(() => {
+        getCartID();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
     // Update results when a new search request is made
     useEffect(() => {
         setPage(0);
@@ -70,7 +89,7 @@ export const BookStore = ({ searchRequest }: Props) => {
                     return <div className="row" key={bookrow.reduce(isbnReducer, "")}>
                         {bookrow.map(book => {
                             return <div className="col" key={`col-${book.isbn}`}>
-                                <Book ISBN={book.isbn}></Book>
+                                <Book ISBN={book.isbn} cart_id={cartID}></Book>
                             </div>
                         })}
                     </div>

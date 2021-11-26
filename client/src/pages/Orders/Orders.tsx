@@ -1,12 +1,12 @@
 
+import Box from '@mui/material/Box';
 import { OrderTable } from "./OrderTable";
 
 export const Orders = () => {
     return (
-        <>
-            <span className="mt-1"></span>
+        <Box mt={2}>
             <OrderTable />
-        </>
+        </Box>
     );
     
 }

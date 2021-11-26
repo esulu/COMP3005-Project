@@ -16,38 +16,33 @@ but modified to suit orders
 
 // Each column
 interface Column {
-  id: 'Tracking Number' | 'Shipping Company' | 'Order Status' | 'Order Date' | 'Shipped to Address'; // Each possible column table (is actually the key)
-  label: string; // Name/label of the column
+  label: 'Tracking Number' | 'Shipping Company' | 'Order Status' | 'Order Date' | 'Shipped to Address'; // Each possible column table (is actually the key)
   minWidth?: number;
   align?: 'right';
   format?: (value: number) => string;
 }
 
+// Array containing all columns in the table
 const columns: readonly Column[] = [
   {
-    id: 'Tracking Number',
     label: 'Tracking Number',
     minWidth: 170
   },
   {
-    id: 'Shipping Company',
     label: 'Shipping Company',
     minWidth: 100
   },
   {
-    id: 'Order Status',
     label: 'Order Status',
     minWidth: 170,
     align: 'right',
   },
   {
-    id: 'Order Date',
     label: 'Order Date',
     minWidth: 170,
     align: 'right',
   },
   {
-    id: 'Shipped to Address',
     label: 'Shipped to Address',
     minWidth: 170,
     align: 'right',
@@ -57,7 +52,7 @@ const columns: readonly Column[] = [
 // Maps a column name to a data name
 // Required for going through a row of a data column and determining which item to output.
 function columnDataMapper(column: Column): string {
-  switch (column.id) {
+  switch (column.label) {
     case 'Tracking Number': return "order_id";
     case 'Shipping Company': return "company_name";
     case 'Order Status': return "status";
@@ -128,7 +123,7 @@ export const OrderTable = () => {
             <TableRow>
               {columns.map((column) => (
                 <TableCell
-                  key={column.id}
+                  key={column.label}
                   align={column.align}
                   style={{ minWidth: column.minWidth }}
                 >
@@ -147,7 +142,7 @@ export const OrderTable = () => {
                     {columns.map((column) => {
                       const value = row[columnDataMapper(column)];
                       return (
-                        <TableCell key={column.id} align={column.align}>
+                        <TableCell key={column.label} align={column.align}>
                           {value}
                         </TableCell>
                       );

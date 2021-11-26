@@ -29,6 +29,7 @@ export const CheckoutAlert = (props:CheckOutAlertSignature) => {
     useEffect(()=> {
         if (!open)
             props.onClose();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
 
     return (

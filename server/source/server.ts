@@ -284,14 +284,14 @@ app.use('/addToCart', (req, res) => {
 
 // login handler that returns a token if the credentials are valid
 app.use('/login', (req, res) => {
-    try {
-        db.runPredefinedQuery("login", [req.body.username, req.body.password])
-            .then(query_result => {
-                res.json(query_result["rowCount"] == 0 ? {} : query_result["rows"][0]);
-            });
-    } catch (error: any) {
-        console.log(error.message);
-    }
+    db.runPredefinedQuery("login", [req.body.username, req.body.password])
+        .then(query_result => {
+            res.json(query_result["rowCount"] == 0 ? {} : query_result["rows"][0]);
+        })
+        .catch(e => {
+            console.log(e.message);
+            res.json({});
+        })
 });
 
 // For when after the user has logged in

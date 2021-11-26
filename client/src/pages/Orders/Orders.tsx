@@ -1,6 +1,7 @@
 
 import Box from '@mui/material/Box';
 import { OrderTable } from "./OrderTable";
+import { FindOrder } from './FindOrder';
 import { Typography } from '@mui/material';
 import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';

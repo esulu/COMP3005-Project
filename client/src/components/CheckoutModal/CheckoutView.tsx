@@ -38,7 +38,7 @@ export const CheckoutView = () => {
     // Function occurs when the confirm button is pressed
     const onConfirm = async () => {
 
-        // First try to validate the user's password that waas provided with their token/user_id
+        // First try to validate the user's password that was provided with their token/user_id
         let verifyResponse = await fetch("http://localhost:5000/verifyUser", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
@@ -59,7 +59,7 @@ export const CheckoutView = () => {
         }
 
         // Now perform the checkout process by providing all the data given in this view
-        // to the server of which will generate a repsonse if it was successful or not
+        // to the server of which will generate a response if it was successful or not
         let checkoutResponse = await fetch("http://localhost:5000/checkout", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
@@ -86,7 +86,7 @@ export const CheckoutView = () => {
             setAlert({
                 alertType: "error",
                 alertTitle: `Server Error ${checkoutRes.status}`,
-                alertDescription: checkoutRes.error.length >= 50 ? "A server issue occured while checking out" : checkoutRes.error,
+                alertDescription: checkoutRes.error.length >= 50 ? "A server issue occurred while checking out" : checkoutRes.error,
                 isOpen: true
             });
             return;
@@ -122,7 +122,7 @@ export const CheckoutView = () => {
                 <TextField
                     sx={textFieldStyle}
                     required
-                    id="filled-required"
+                    className="filled-required"
                     label="Required"
                     variant="filled"
                     onChange={event => setAddress(event.target.value)}
@@ -137,7 +137,7 @@ export const CheckoutView = () => {
                 <TextField
                     sx={textFieldStyle}
                     required
-                    id="filled-required"
+                    className="filled-required"
                     label="Required"
                     variant="filled"
                     onChange={event => setBankNumber(event.target.value)}

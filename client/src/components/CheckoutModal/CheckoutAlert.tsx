@@ -6,7 +6,7 @@ export interface AlertProps {
     alertType: any,
     alertDescription: string,
     alertTitle?: string
-    isOpen:boolean
+    isOpen: boolean
 }
 
 interface CheckOutAlertSignature {
@@ -17,16 +17,16 @@ interface CheckOutAlertSignature {
 
 // similarities comes from https://mui.com/components/alert/
 /**
- * A component for peforming alerts specifically for the checkoutview
+ * A component for performing alerts specifically for the checkoutview
  * @param props The alertprops defined as in type and a function onclose when the user pressed the close button 
  */
-export const CheckoutAlert = (props:CheckOutAlertSignature) => {
+export const CheckoutAlert = (props: CheckOutAlertSignature) => {
 
     // states
     const [open, setOpen] = useState(true);
 
     // call callback function each time user closes 
-    useEffect(()=> {
+    useEffect(() => {
         if (!open)
             props.onClose();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -50,8 +50,8 @@ export const CheckoutAlert = (props:CheckOutAlertSignature) => {
                 }
                 sx={{ mb: 2 }}
             >
-            {props.alertProps.alertTitle && 
-                <AlertTitle>{props.alertProps.alertTitle}</AlertTitle>}
+                {props.alertProps.alertTitle &&
+                    <AlertTitle>{props.alertProps.alertTitle}</AlertTitle>}
                 {props.alertProps.alertDescription}
             </Alert>
         </Collapse>

@@ -18,7 +18,7 @@ but modified to suit orders
 interface Column {
   label: 'Tracking Number' | 'Shipping Company' | 'Order Status' | 'Order Date' | 'Shipped to Address'; // Each possible column table (is actually the key)
   minWidth?: number;
-  align?: 'right';
+  align?: 'left' | 'right' | 'center';
   format?: (value: number) => string;
 }
 
@@ -26,21 +26,23 @@ interface Column {
 const columns: readonly Column[] = [
   {
     label: 'Tracking Number',
-    minWidth: 170
+    minWidth: 170,
+    align: 'left',
   },
   {
     label: 'Shipping Company',
-    minWidth: 100
+    minWidth: 100,
+    align: 'center',
   },
   {
     label: 'Order Status',
     minWidth: 170,
-    align: 'right',
+    align: 'center',
   },
   {
     label: 'Order Date',
     minWidth: 170,
-    align: 'right',
+    align: 'center',
   },
   {
     label: 'Shipped to Address',

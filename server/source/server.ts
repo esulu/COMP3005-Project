@@ -3,6 +3,7 @@ import cors from 'cors'
 import pg from 'pg'
 import { getDB, makeResponse, QueryResult, QueryCreatorReturnType } from './db'
 import _ from 'lodash'
+import { EDESTADDRREQ } from 'constants'
 
 const port = 5000;
 const app = express();
@@ -438,6 +439,18 @@ app.use('/checkout', async (req, res) => {
             console.log("FATAL error : " + err);
             res.json({ status: 400, error: err });
         });
+});
+
+app.use('/orderInfo', (req, res) => {
+    let user_id = getIntParameter(req.body.token, -1);
+
+    db.runPredefinedQuery("orderInfo", [user_id])
+    .then( query_result => {
+        res.json(query_result);
+    }).catch( err => {
+        res.json({});
+        console.log(err);
+    })
 });
 
 app.listen(port, () => {

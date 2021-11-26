@@ -1,5 +1,12 @@
-import React from "react";
+
+import Box from '@mui/material/Box';
+import { OrderTable } from "./OrderTable";
 
 export const Orders = () => {
-    return <div>Orders</div>
+    return (
+        <Box mt={2}>
+            <OrderTable />
+        </Box>
+    );
+    
 }

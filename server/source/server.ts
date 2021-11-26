@@ -309,13 +309,6 @@ app.use('/verifyUser', (req, res) => {
         });
 });
 
-// Endpoint determines if a user is an owner
-app.use('/verifyOwner', (req, res) => {
-    db.runPredefinedQuery("verifyOwner", [req.body.token])
-        .then(query_result => res.json(query_result))
-        .catch(e => res.json({status:400, text:e}));
-});
-
 app.use('/checkout', async (req, res) => {
     // Sanitize the three inputs, user_id, address and bankNumber
     let user_id = getIntParameter(req.body.token, -1, -1, 10000000);

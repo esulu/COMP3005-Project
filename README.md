@@ -14,7 +14,7 @@ TODO: update these when connection improvements are made
 - Clone the repository
 - Download and install pgAdmin and postgresql 
 - Create a database named bookstore
-- Rune the DDL.sql and populate.sql to create the tables and fill out info
+- Run the DDL.sql and populate.sql to create the tables and fill out info
 - Update the credentials in `server/source/db.ts` to connect to your local database
 - cd into the `server/source` directory and use `npm install` and `npm run dev` to start the db server
 - create a new terminal
@@ -27,7 +27,4 @@ TODO: update these when connection improvements are made
 - [pgAdmin](https://www.pgadmin.org/) (optional)
 - [NodeJS](https://nodejs.org/en/)
 - [Express](https://expressjs.com/)
-
-Use one or the other
-- [Bootstrap](https://getbootstrap.com/docs/4.0/getting-started/introduction/)
 - [Material UI](https://mui.com/)

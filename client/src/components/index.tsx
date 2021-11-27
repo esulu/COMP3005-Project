@@ -7,3 +7,4 @@ export * from './Auth/PrivateRoute';
 export * from './Auth/UseToken';
 export * from './CheckoutModal/CheckoutModal';
 export * from './Fragments/SearchBar';
+export * from './Fragments/AlertBox';

@@ -9,18 +9,15 @@ export interface AlertProps {
     isOpen: boolean
 }
 
-interface CheckOutAlertSignature {
+interface AlertSignature {
     alertProps: AlertProps,
     onClose: () => void
 }
 
-
-// similarities comes from https://mui.com/components/alert/
 /**
- * A component for performing alerts specifically for the checkoutview
- * @param props The alertprops defined as in type and a function onclose when the user pressed the close button 
+ * A component for performing alerts messages
  */
-export const CheckoutAlert = (props: CheckOutAlertSignature) => {
+export const AlertBox = (props: AlertSignature) => {
 
     // states
     const [open, setOpen] = useState(true);

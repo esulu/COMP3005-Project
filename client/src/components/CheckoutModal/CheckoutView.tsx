@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import { CheckoutAlert, AlertProps } from "./CheckoutAlert";
+import { AlertBox, AlertProps } from "../Fragments/AlertBox";
 import { CheckoutProp } from "..";
 
 // Style for every box
@@ -175,7 +175,7 @@ export const CheckoutView = (props: CheckoutProp) => {
             </Typography>
 
             {/* The alert popup when the user presses the confirm checkout button */}
-            {alert && <CheckoutAlert alertProps={alert} onClose={onAlertClose}></CheckoutAlert>}
+            {alert && <AlertBox alertProps={alert} onClose={onAlertClose}></AlertBox>}
         </div>
     )
 }

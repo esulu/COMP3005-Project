@@ -302,11 +302,11 @@ app.use('/getCart', (req, res) => {
 
 app.use('/getCartID', (req, res) => {
     db.runPredefinedQuery("getCartID", [getIntParameter(req.query.user_id, -1)])
-    .then(query_result => res.json(query_result["rowCount"] === 0 ? {} : query_result["rows"][0]))
-    .catch(err => {
-        res.json({});
-        console.log(err);
-    })
+        .then(query_result => res.json(query_result["rowCount"] === 0 ? {} : query_result["rows"][0]))
+        .catch(err => {
+            res.json({});
+            console.log(err);
+        })
 });
 
 // |--------------------|
@@ -449,25 +449,108 @@ app.use('/orderInfo', (req, res) => {
     let user_id = getIntParameter(req.body.token, -1);
 
     db.runPredefinedQuery("orderInfo", [user_id])
-    .then( query_result => {
-        res.json(query_result);
-    }).catch( err => {
-        res.json({});
-        console.log(err);
-    })
+        .then(query_result => {
+            res.json(query_result);
+        }).catch(err => {
+            res.json({});
+            console.log(err);
+        })
 });
 
 app.use('/findOrder', (req, res) => {
     let order_id = getIntParameter(req.query.order_id, -1);
     db.runPredefinedQuery("findOrder", [order_id])
-    .then( query_result => res.json(query_result))
-    .catch( err => {
-        res.json({});
-        console.log(err);
-    })
+        .then(query_result => res.json(query_result))
+        .catch(err => {
+            res.json({});
+            console.log(err);
+        })
+});
+
+// |--------------------|
+// | Owner add & remove |
+// |--------------------|
+
+// Add a book to the store
+app.use('/addBook', (req, res) => {
+    // Sanitize each of the inputs
+    for (var param in req.body) {
+        if (!sanitizeNonNull(req.body[param])) {
+            res.json({ status: 400, error: `Invalid ${param} input` });
+            return;
+        }
+    }
+
+    async function canAddBook(client: pg.PoolClient): Promise<QueryCreatorReturnType> {
+        try {
+            let result = await db.runPredefinedQuery("addBook", [
+                req.body.isbn, req.body.title, req.body.year, req.body.genre, req.body.page_count,
+                req.body.price, req.body.commission, req.body.url, req.body.quantity,
+                req.body.warehouse_id, req.body.publisher_id, req.body.is_purchasable
+            ], client);
+
+            if (result.rowCount === 0)
+                throw "The book cannot be added";
+
+        } catch (error: any) {
+            return { hasErrors: true, error: error };
+        }
+        return { hasErrors: false };
+    }
+
+    // Attempt to add a book
+    // If it fails, then stop. Otherwise, add the writer
+    db.runTransaction(canAddBook)
+        .then(() => {
+            db.runPredefinedQuery("addWriter", [req.body.isbn, req.body.author_id])
+                .catch(err => {
+                    console.log(err);
+                });
+            res.json({ status: 200, text: "" });
+        }).catch(err => {
+            res.json({ status: 400, error: err });
+        });
+});
+
+// Remove a book from the store
+app.use('/removeBook', (req, res) => {
+    db.runPredefinedQuery("removeBook", [req.body.isbn])
+        .then(query_result => res.json(query_result))
+        .catch(err => {
+            console.log(err);
+        });
+});
+
+// Get the available warehouses
+app.use('/getWarehouses', (req, res) => {
+    db.runPredefinedQuery("warehouses", [])
+        .then(query_result => res.json(query_result["rows"]))
+        .catch(err => {
+            console.log(err);
+        });
+});
+
+// Get the available publishers
+app.use('/getPublishers', (req, res) => {
+    db.runPredefinedQuery("publishers", [])
+        .then(query_result => res.json(query_result["rows"]))
+        .catch(err => {
+            console.log(err);
+        });
 });
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
 
+
+// -------------------------------------------------------------------------------------
+// Helper functions
+// -------------------------------------------------------------------------------------
+
+// Sanitize all inputs to be non-null and send an error message otherwise 
+const sanitizeNonNull = (param: string): boolean => {
+    if (param == null || (typeof param === 'string' && param.trim() == ""))
+        return false;
+    return true;
+}

@@ -389,18 +389,7 @@ app.use('/checkout', async (req, res) => {
             if (parseInt(num.rows[0].quantity) === 0)
                 throw "There are no books in the cart.";
 
-            // Get the book quantity info
-            const quantities = await db.runPredefinedQuery("getQuantities", [cart_id], client)
 
-            // Update the quantity for each book
-            quantities.rows.forEach(async (obj) => {
-                let newQuantity = obj.bookquantity - obj.quantity;
-                await db.runPredefinedQuery("updateQuantity", [newQuantity, obj.isbn], client);
-
-                // Remove book from store page if no longer available 
-                if (newQuantity < 1)
-                    await db.runPredefinedQuery("removeBook", [obj.isbn], client)
-            });
 
         } catch (error: any) {
             return { hasErrors: true, error: error };
@@ -410,6 +399,19 @@ app.use('/checkout', async (req, res) => {
 
     // query function to run in transaction
     async function doCheckout(client: pg.PoolClient): Promise<QueryCreatorReturnType> {
+
+        // Get the book quantity info
+        const quantities = await db.runPredefinedQuery("getQuantities", [cart_id], client)
+
+        // Update the quantity for each book
+        quantities.rows.forEach(async (obj) => {
+            let newQuantity = obj.bookquantity - obj.quantity;
+            await db.runPredefinedQuery("updateQuantity", [newQuantity, obj.isbn], client);
+
+            // Remove book from store page if no longer available 
+            if (newQuantity < 1)
+                await db.runPredefinedQuery("removeBook", [obj.isbn], client)
+        });
 
         try {
             // Get the warehouse key

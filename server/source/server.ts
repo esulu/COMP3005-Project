@@ -471,12 +471,53 @@ app.use('/findOrder', (req, res) => {
 // | Owner add & remove |
 // |--------------------|
 
+// Add a book
+app.use('/addBook', (req, res) => {
+    db.runPredefinedQuery("addBook", [
+        req.body.isbn, req.body.title, req.body.year, req.body.genre, req.body.page_count,
+        req.body.price, req.body.commission, req.body.url, req.body.quantity,
+        req.body.warehouse_id, req.body.publisher_id, req.body.is_purchasable
+    ])
+        .then(query_result => res.json(query_result))
+        .catch(err => {
+            res.json({});
+            console.log(err);
+        });
+});
+
+// TODO: merge this and the above, ensuring the book can be added first before adding a writer
+// Add a writer for a book
+app.use('/addAuthor', (req, res) => {
+    db.runPredefinedQuery("addWriter", [req.body.isbn, req.body.author_id])
+        .then(query_result => res.json(query_result))
+        .catch(err => {
+            console.log(err);
+        });
+});
+
 // Remove a book
 app.use('/removeBook', (req, res) => {
     db.runPredefinedQuery("removeBook", [req.body.isbn])
         .then(query_result => res.json(query_result))
         .catch(err => {
-            res.json({});
+            console.log(err);
+        });
+});
+
+// Get the available warehouses
+app.use('/getWarehouses', (req, res) => {
+    db.runPredefinedQuery("warehouses", [])
+        .then(query_result => res.json(query_result["rows"]))
+        .catch(err => {
+            console.log(err);
+        });
+});
+
+// Get the available publishers
+app.use('/getPublishers', (req, res) => {
+    db.runPredefinedQuery("publishers", [])
+        .then(query_result => res.json(query_result["rows"]))
+        .catch(err => {
             console.log(err);
         });
 });

@@ -1,9 +1,8 @@
-import express, { query } from 'express'
+import express from 'express'
 import cors from 'cors'
 import pg from 'pg'
 import { getDB, makeResponse, QueryResult, QueryCreatorReturnType } from './db'
 import _ from 'lodash'
-import { EDESTADDRREQ } from 'constants'
 
 const port = 5000;
 const app = express();

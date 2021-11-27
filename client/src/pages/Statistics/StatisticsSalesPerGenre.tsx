@@ -50,7 +50,7 @@ export const StatisticsSalersPerGenre = () => {
             newDataSet.data.push(genreSales.sales);
             newDataSet.backgroundColor.push(`rgba(${_.random(255, true)}, ${_.random(255, true)}, ${_.random(255, true)}, 0.5)`);
         }
-        console.log(newChartData);
+
         setChartData(newChartData);
     };
 

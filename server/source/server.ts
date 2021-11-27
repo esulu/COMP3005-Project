@@ -302,11 +302,11 @@ app.use('/getCart', (req, res) => {
 
 app.use('/getCartID', (req, res) => {
     db.runPredefinedQuery("getCartID", [getIntParameter(req.query.user_id, -1)])
-    .then(query_result => res.json(query_result["rowCount"] === 0 ? {} : query_result["rows"][0]))
-    .catch(err => {
-        res.json({});
-        console.log(err);
-    })
+        .then(query_result => res.json(query_result["rowCount"] === 0 ? {} : query_result["rows"][0]))
+        .catch(err => {
+            res.json({});
+            console.log(err);
+        })
 });
 
 // |--------------------|
@@ -449,22 +449,36 @@ app.use('/orderInfo', (req, res) => {
     let user_id = getIntParameter(req.body.token, -1);
 
     db.runPredefinedQuery("orderInfo", [user_id])
-    .then( query_result => {
-        res.json(query_result);
-    }).catch( err => {
-        res.json({});
-        console.log(err);
-    })
+        .then(query_result => {
+            res.json(query_result);
+        }).catch(err => {
+            res.json({});
+            console.log(err);
+        })
 });
 
 app.use('/findOrder', (req, res) => {
     let order_id = getIntParameter(req.query.order_id, -1);
     db.runPredefinedQuery("findOrder", [order_id])
-    .then( query_result => res.json(query_result))
-    .catch( err => {
-        res.json({});
-        console.log(err);
-    })
+        .then(query_result => res.json(query_result))
+        .catch(err => {
+            res.json({});
+            console.log(err);
+        })
+});
+
+// |--------------------|
+// | Owner add & remove |
+// |--------------------|
+
+// Remove a book
+app.use('/removeBook', (req, res) => {
+    db.runPredefinedQuery("removeBook", [req.body.isbn])
+        .then(query_result => res.json(query_result))
+        .catch(err => {
+            res.json({});
+            console.log(err);
+        });
 });
 
 app.listen(port, () => {

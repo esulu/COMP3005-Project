@@ -1,1 +1,2 @@
-SELECT DISTINCT author_name FROM author;
+-- Retrieve all author information
+SELECT * FROM author;

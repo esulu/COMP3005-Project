@@ -471,17 +471,44 @@ app.use('/findOrder', (req, res) => {
 // | Owner add & remove |
 // |--------------------|
 
-// Add a book
+// Add a book to the store
 app.use('/addBook', (req, res) => {
-    db.runPredefinedQuery("addBook", [
-        req.body.isbn, req.body.title, req.body.year, req.body.genre, req.body.page_count,
-        req.body.price, req.body.commission, req.body.url, req.body.quantity,
-        req.body.warehouse_id, req.body.publisher_id, req.body.is_purchasable
-    ])
-        .then(query_result => res.json(query_result))
-        .catch(err => {
-            res.json({});
-            console.log(err);
+    // Sanitize each of the inputs
+    for (var param in req.body) {
+        if (!sanitizeNonNull(req.body[param])) {
+            res.json({ status: 400, error: `Invalid ${param} input` });
+            return;
+        }
+    }
+
+    async function canAddBook(client: pg.PoolClient): Promise<QueryCreatorReturnType> {
+        try {
+            let result = await db.runPredefinedQuery("addBook", [
+                req.body.isbn, req.body.title, req.body.year, req.body.genre, req.body.page_count,
+                req.body.price, req.body.commission, req.body.url, req.body.quantity,
+                req.body.warehouse_id, req.body.publisher_id, req.body.is_purchasable
+            ], client);
+
+            if (result.rowCount === 0)
+                throw "The book cannot be added";
+
+        } catch (error: any) {
+            return { hasErrors: true, error: error };
+        }
+        return { hasErrors: false };
+    }
+
+    // Attempt to add a book
+    // If it fails, then stop. Otherwise, add the writer
+    db.runTransaction(canAddBook)
+        .then(() => {
+            db.runPredefinedQuery("addWriter", [req.body.isbn, req.body.author_id])
+                .catch(err => {
+                    console.log(err);
+                });
+            res.json({ status: 200, text: "" });
+        }).catch(err => {
+            res.json({ status: 400, error: err });
         });
 });
 
@@ -495,7 +522,7 @@ app.use('/addAuthor', (req, res) => {
         });
 });
 
-// Remove a book
+// Remove a book from the store
 app.use('/removeBook', (req, res) => {
     db.runPredefinedQuery("removeBook", [req.body.isbn])
         .then(query_result => res.json(query_result))
@@ -526,3 +553,14 @@ app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
 
+
+// -------------------------------------------------------------------------------------
+// Helper functions
+// -------------------------------------------------------------------------------------
+
+// Sanitize all inputs to be non-null and send an error message otherwise 
+const sanitizeNonNull = (param: string): boolean => {
+    if (param == null || (typeof param === 'string' && param.trim() == ""))
+        return false;
+    return true;
+}

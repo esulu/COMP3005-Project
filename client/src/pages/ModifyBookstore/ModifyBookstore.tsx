@@ -15,22 +15,23 @@ const boxStyle = {
 }
 
 interface SelectFill {
-    result: string;
+    name: string,
+    id: string
 }
 
 // Autofill results for warehouses
 let warehouses = [
-    { result: 'Sample Warehouse' }
+    { name: 'Sample Warehouse', id: '0' }
 ];
 
 // Autofill results for publishers
 let publishers = [
-    { result: 'Sample Publisher' }
+    { name: 'Sample Publisher', id: '0' }
 ];
 
 // Autofill results for authors
 let authors = [
-    { result: 'Sample Author' }
+    { name: 'Sample Author', id: '0' }
 ];
 
 /**
@@ -40,16 +41,16 @@ export const ModifyBookstore = () => {
     // Add book states
     const [isbn, setIsbn] = useState("");
     const [title, setTitle] = useState("");
-    const [year, setYear] = useState("");
+    const [year, setYear] = useState("non-integer");
     const [genre, setGenre] = useState("");
-    const [pageCount, setPageCount] = useState("");
-    const [price, setPrice] = useState("");
-    const [commission, setCommission] = useState("");
+    const [pageCount, setPageCount] = useState("non-integer");
+    const [price, setPrice] = useState("non-integer");
+    const [commission, setCommission] = useState("non-integer");
     const [image, setImage] = useState("");
-    const [quantity, setQuantity] = useState("");
-    const [warehouse, setWarehouse] = useState("");
-    const [publisher, setPublisher] = useState("");
-    const [author, setAuthor] = useState("");
+    const [quantity, setQuantity] = useState("non-integer");
+    const [warehouse, setWarehouse] = useState("non-integer");
+    const [publisher, setPublisher] = useState("non-integer");
+    const [author, setAuthor] = useState("non-integer");
     const [addAlert, setAddAlert] = useState<AlertProps | undefined>(undefined);
 
     // Remove book states
@@ -71,31 +72,21 @@ export const ModifyBookstore = () => {
                 commission: Number(commission),
                 url: image,
                 quantity: Number(quantity),
-                warehouse_id: warehouse,
-                publisher_id: publisher,
-                is_purchasable: true
+                warehouse_id: Number(warehouse),
+                publisher_id: Number(publisher),
+                is_purchasable: true,
+                author_id: Number(author)
             })
         });
 
         const jsonData = await response.json();
 
-        // const authorResponse = await fetch("http://localhost:5000/addWriter", {
-        //     method: "POST",
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({
-        //         isbn: isbn,
-        //         author_id: author
-        //     })
-        // });
-
-        console.log(jsonData)
-
         // Send response depending on if the response was successful or not
-        if (jsonData.rowCount === 0) {
+        if (jsonData.status === 400) {
             setAddAlert({
                 alertType: "error",
                 alertTitle: `Error`,
-                alertDescription: "The book cannot be added",
+                alertDescription: `The book cannot be added for reason: ${jsonData.error}`,
                 isOpen: true
             });
             return;
@@ -142,7 +133,7 @@ export const ModifyBookstore = () => {
         const response = await fetch('http://localhost:5000/getWarehouses');
         const jsonData = await response.json();
         warehouses = jsonData.map(function (element: any) {
-            return { result: element["warehouse_address"] };
+            return { name: element["warehouse_address"], id: element["warehouse_id"] };
         });
     }
 
@@ -151,7 +142,7 @@ export const ModifyBookstore = () => {
         const response = await fetch('http://localhost:5000/getPublishers');
         const jsonData = await response.json();
         publishers = jsonData.map(function (element: any) {
-            return { result: element["publisher_name"] };
+            return { name: element["publisher_name"], id: element["publisher_id"] };
         });
     }
 
@@ -160,7 +151,7 @@ export const ModifyBookstore = () => {
         const response = await fetch('http://localhost:5000/getAuthors');
         const jsonData = await response.json();
         authors = jsonData.map(function (element: any) {
-            return { result: element["author_name"] };
+            return { name: element["author_name"], id: element["author_id"] };
         });
     }
 
@@ -265,11 +256,11 @@ export const ModifyBookstore = () => {
                     onClose={() => {
                         setOpenWarehouse(false);
                     }}
-                    isOptionEqualToValue={(option, value) => option.result === value.result}
-                    getOptionLabel={(option) => option.result}
+                    isOptionEqualToValue={(option, value) => option.name === value.name}
+                    getOptionLabel={(option) => option.name}
                     options={optionsWarehouse}
                     loading={loading}
-                    onInputChange={(event, value) => setWarehouse(value)}
+                    onChange={(event, value) => { if (value !== null) setWarehouse(value.id) }}
                     renderInput={(params) => (
                         <TextField
                             {...params}
@@ -294,11 +285,11 @@ export const ModifyBookstore = () => {
                     onClose={() => {
                         setOpenPublisher(false);
                     }}
-                    isOptionEqualToValue={(option, value) => option.result === value.result}
-                    getOptionLabel={(option) => option.result}
+                    isOptionEqualToValue={(option, value) => option.name === value.name}
+                    getOptionLabel={(option) => option.name}
                     options={optionsPublisher}
                     loading={loading}
-                    onInputChange={(event, value) => setPublisher(value)}
+                    onChange={(event, value) => { if (value !== null) setPublisher(value.id) }}
                     renderInput={(params) => (
                         <TextField
                             {...params}
@@ -323,11 +314,11 @@ export const ModifyBookstore = () => {
                     onClose={() => {
                         setOpenAuthor(false);
                     }}
-                    isOptionEqualToValue={(option, value) => option.result === value.result}
-                    getOptionLabel={(option) => option.result}
+                    isOptionEqualToValue={(option, value) => option.name === value.name}
+                    getOptionLabel={(option) => option.name}
                     options={optionsAuthor}
                     loading={loading}
-                    onInputChange={(event, value) => setAuthor(value)}
+                    onChange={(event, value) => { if (value !== null) setAuthor(value.id) }}
                     renderInput={(params) => (
                         <TextField
                             {...params}

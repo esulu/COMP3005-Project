@@ -1,4 +1,4 @@
-import { Box, Divider, Paper, Stack } from "@mui/material"
+import { Box, Stack } from "@mui/material"
 import { StatisticsSalersPerGenre } from './StatisticsSalesPerGenre';
 import { StatisticsScatterChart, DataSet, ScatterProps } from './StatisticsScatterChart';
 import _ from "lodash";
@@ -59,19 +59,3 @@ export const Statistics = () => {
         
     );
   }
-
-  /**
-  <Box sx={{height: '50%'}}>
-                <Box sx={{ height: '50%' }}>
-                    <Paper elevation={6}>
-                        <StatisticsSalersPerGenre />
-                    </Paper>
-                </Box>
-                <Paper elevation={6}>
-                    <StatisticsScatterChart props={salesVsExpenditure}/>
-                </Paper>
-                <Paper elevation={6}>
-                    <StatisticsScatterChart props={salesVsAuthor}/>
-                </Paper>
-            </Box>
-   */

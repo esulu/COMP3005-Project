@@ -1,18 +1,10 @@
-
-
-import {
-    Chart as ChartJS,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Tooltip,
-    Legend,
-} from 'chart.js';
+import {Chart as ChartJS, LinearScale, PointElement, LineElement, Tooltip, Legend, } from 'chart.js';
 import { useEffect, useState } from 'react';
 import { Chart } from 'react-chartjs-2';
 import Typography from '@mui/material/Typography';
 
-ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend);
+// delegate chart.js plugins to the react-chartjs-2 wrapper
+ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend); 
 
 export interface Point {
     x: number,
@@ -25,10 +17,16 @@ export interface DataSet {
     backgroundColor: string,
 }
 
+// The interface that chart.js accepts as data for the chart
 interface ScatterData {
     datasets: DataSet[],
 }
 
+/**
+ * Props used for a scatter chart
+ * endpoint: the server endpoint to retrieve date
+ * decomposeEndpoint: function that takes an object (of a row) and returns a dataset of said object
+ */
 export interface ScatterProps {
     endpoint: string,
     decomposeEndpoint: (obj:any) => DataSet,
@@ -63,6 +61,7 @@ export const StatisticsScatterChart = ({props} : {props: ScatterProps}) => {
             y: {title: {display:true,text: props.yAxisTitle},}, 
             x: {title:{display:true, text: props.xAxisTitle}}
         },
+        maintainAspectRatio: false
     };
 
     const getData = async () => {
@@ -79,6 +78,7 @@ export const StatisticsScatterChart = ({props} : {props: ScatterProps}) => {
             dataSets.push()
         }
 
+        // set the scatterchart data (and update the state)
         setScatterData({ datasets: dataSets });
     }
 
@@ -90,14 +90,11 @@ export const StatisticsScatterChart = ({props} : {props: ScatterProps}) => {
 
     return (
         <>
-            {scatterData && <>
-                <Typography variant="h5" align="center"> {props.title} </Typography> {/* The title option in chart does not work at all! */}
+            {scatterData && <div className="chart-container mx-auto" style={{position: 'relative', height:'70vh', width:'80vw'}}>
+                <Typography variant="h5" align="center" style={{textDecorationLine: 'underline'}}> {props.title} </Typography> {/* The title option in chart does not work at all! */}
                 <Chart options={options} type='scatter' data={scatterData} />
-                </>
+                </div>
             }
         </>
     )
 }
-/**
- 
- */

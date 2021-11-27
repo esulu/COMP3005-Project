@@ -1,14 +1,14 @@
-
-
-import React from 'react';
-import { Paper, Stack } from "@mui/material"
+import { Box, Divider, Paper, Stack } from "@mui/material"
 import { StatisticsSalersPerGenre } from './StatisticsSalesPerGenre';
 import { StatisticsScatterChart, DataSet, ScatterProps } from './StatisticsScatterChart';
 import _ from "lodash";
 
+// Props to enter for creating a sales vs expenditure scatter plot
+// contains both properties of the table and how to decompose the endpoint given
 const salesVsExpenditure : ScatterProps = {
     endpoint: "getSalesExpenditure",
     decomposeEndpoint: function(data) : DataSet {
+        // data is the object recieved from the endpoint, we retrived a dataset of said endpoint as follows
         return {
             label: data.title,
             data: [{ x: data.expenditure, y: data.sales }],
@@ -20,6 +20,7 @@ const salesVsExpenditure : ScatterProps = {
     yAxisTitle: "Sales",
 }
 
+// same but for author vs sales
 const salesVsAuthor: ScatterProps = {
     endpoint: "getSalesPerAuthor",
     decomposeEndpoint: function(data) : DataSet {
@@ -34,22 +35,43 @@ const salesVsAuthor: ScatterProps = {
     yAxisTitle: "Sales",
 }
 
+
+const boxStyle = {
+    mb:10
+}
+
 export const Statistics = () => {
     return (
-        <>
-            {<Stack padding={1}>
-                <h3>Statistics</h3>
-                <Paper elevation={6}>
-                    <StatisticsSalersPerGenre />
-                </Paper>
+        <Stack spacing={2}>
+            <Box sx={boxStyle}>
+                <StatisticsSalersPerGenre />
+            </Box>
+            <Box sx={boxStyle}>
+                <StatisticsScatterChart props={salesVsExpenditure}/>
+            </Box>
+            {/* These two do not obey any style i can put on, boostrap, mui, their own styling api, nothing works */}
+            <span style={{margin:10}}></span> 
+            <span style={{margin:10}}></span>
+            <Box sx={boxStyle}>
+                <StatisticsScatterChart props={salesVsAuthor}/>
+            </Box>
+        </Stack>
+        
+    );
+  }
+
+  /**
+  <Box sx={{height: '50%'}}>
+                <Box sx={{ height: '50%' }}>
+                    <Paper elevation={6}>
+                        <StatisticsSalersPerGenre />
+                    </Paper>
+                </Box>
                 <Paper elevation={6}>
                     <StatisticsScatterChart props={salesVsExpenditure}/>
                 </Paper>
                 <Paper elevation={6}>
                     <StatisticsScatterChart props={salesVsAuthor}/>
                 </Paper>
-            </Stack> }
-        </>
-        
-    );
-  }
+            </Box>
+   */

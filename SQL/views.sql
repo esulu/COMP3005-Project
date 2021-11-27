@@ -25,4 +25,4 @@ SELECT author_name, SUM(sales) AS sales
 FROM booksalestatistics
 NATURAL JOIN written_by
 NATURAL JOIN author
-GROUP BY author_name
+GROUP BY author_name;

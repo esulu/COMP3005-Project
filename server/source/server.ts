@@ -442,7 +442,7 @@ app.use('/checkout', async (req, res) => {
 });
 
 // |--------------------|
-// | Checkout           |
+// | Orders          |
 // |--------------------|
 
 app.use('/orderInfo', (req, res) => {
@@ -466,6 +466,41 @@ app.use('/findOrder', (req, res) => {
         console.log(err);
     })
 });
+
+
+
+// |--------------------|
+// | Statistics         |
+// |--------------------|
+
+
+app.use('/getBookSalesPerGenre', (req, res) => {
+    db.runPredefinedQuery("getBookSalesPerGenre", [])
+    .then(query_result => res.json(query_result))
+    .catch(err=> {
+        res.json(makeResponse([]));
+        console.log(err);
+    });
+});
+
+app.use('/getSalesExpenditure', (req, res) => {
+    db.runPredefinedQuery("getSalesExpenditure", [])
+    .then(query_result => res.json(query_result))
+    .catch(err=> {
+        res.json(makeResponse([]));
+        console.log(err);
+    });
+});
+
+app.use('/getSalesPerAuthor', (req, res) => {
+    db.runPredefinedQuery("getSalesPerAuthor", [])
+    .then(query_result => res.json(query_result))
+    .catch(err=> {
+        res.json(makeResponse([]));
+        console.log(err);
+    });
+});
+
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

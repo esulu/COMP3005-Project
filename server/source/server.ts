@@ -512,16 +512,6 @@ app.use('/addBook', (req, res) => {
         });
 });
 
-// TODO: merge this and the above, ensuring the book can be added first before adding a writer
-// Add a writer for a book
-app.use('/addAuthor', (req, res) => {
-    db.runPredefinedQuery("addWriter", [req.body.isbn, req.body.author_id])
-        .then(query_result => res.json(query_result))
-        .catch(err => {
-            console.log(err);
-        });
-});
-
 // Remove a book from the store
 app.use('/removeBook', (req, res) => {
     db.runPredefinedQuery("removeBook", [req.body.isbn])

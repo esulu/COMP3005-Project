@@ -106,6 +106,14 @@ export const CheckoutView = (props: CheckoutProp) => {
             isOpen: true
         });
 
+        // Email any publishers to order new books if the quantity falls below a threshold
+        if (checkoutRes.emailData && checkoutRes.emailData.length !== 0) {
+            checkoutRes.emailData.forEach((info: { isbn: string, publisher: string, orderAmount: number }) => {
+                console.log("Sent email to publisher " + info.publisher + " to order " +
+                    info.orderAmount + " copies of book with ISBN " + info.isbn);
+            });
+        }
+
         // Call the parent function to alert of a successful order
         await sleep(2500);
         props.onCheckout();

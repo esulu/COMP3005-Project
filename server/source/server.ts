@@ -365,7 +365,6 @@ app.use('/checkout', async (req, res) => {
         return;
     }
 
-
     // Whenever we run a query in our transaction, it shouldn't return an empty table
     const insureIntegrity = (query: QueryResult) => {
         if (query.rowCount === 0)
@@ -373,6 +372,9 @@ app.use('/checkout', async (req, res) => {
     }
 
     let cart_id: number; // we use this in both functions, might as well do the query once.
+
+    // Object for the success response
+    let successResponse: { [key: string]: any } = { status: 200 };
 
     // Before we do the queries, we should ensure that the cart of the user actually has data in it
     async function ensureBooksInCart(client: pg.PoolClient): Promise<QueryCreatorReturnType> {
@@ -388,8 +390,6 @@ app.use('/checkout', async (req, res) => {
             if (parseInt(num.rows[0].quantity) === 0)
                 throw "There are no books in the cart.";
 
-
-
         } catch (error: any) {
             return { hasErrors: true, error: error };
         }
@@ -402,6 +402,8 @@ app.use('/checkout', async (req, res) => {
         // Get the book quantity info
         const quantities = await db.runPredefinedQuery("getQuantities", [cart_id], client)
 
+        let emailData: { isbn: string, publisher: string, orderAmount: number }[] = [];
+
         // Update the quantity for each book
         quantities.rows.forEach(async (obj) => {
             let newQuantity = obj.bookquantity - obj.quantity;
@@ -410,7 +412,28 @@ app.use('/checkout', async (req, res) => {
             // Remove book from store page if no longer available 
             if (newQuantity < 1)
                 await db.runPredefinedQuery("removeBook", [obj.isbn], client)
+
+            // When the quantity is below 10, publishers must be emailed
+            if (newQuantity < 10) {
+                // Get the publisher name
+                const publisherResponse = await db.runPredefinedQuery("getPublisherName", [obj.isbn], client);
+                const publisher = publisherResponse.rows[0].publisher_name;
+
+                // Get the number of copies of this book sold last month
+                // If none, then default to 10
+                const orderResponse = await db.runPredefinedQuery("previousMonthBookSale", [obj.isbn], client);
+                const orderAmount = orderResponse.rowCount === 0 ? 10 : orderResponse.rows[0].order_amount;
+                
+                const isbn = obj.isbn
+
+                // Add results into the response 
+                emailData.push({ isbn, publisher, orderAmount });
+            }
+
         });
+
+        // Add the email data in the response
+        successResponse.emailData = emailData;
 
         try {
             // Get the warehouse key
@@ -443,7 +466,7 @@ app.use('/checkout', async (req, res) => {
         .then(() => {
             // Now perform the checkout
             db.runTransaction(doCheckout)
-                .then(() => res.json({ status: 200 }))
+                .then(() => res.json(successResponse))
                 .catch(err => {
                     console.log(err);
                     res.json({ status: 400, error: err });
@@ -562,29 +585,29 @@ app.use('/getPublishers', (req, res) => {
 
 app.use('/getBookSalesPerGenre', (req, res) => {
     db.runPredefinedQuery("getBookSalesPerGenre", [])
-    .then(query_result => res.json(query_result))
-    .catch(err=> {
-        res.json(makeResponse([]));
-        console.log(err);
-    });
+        .then(query_result => res.json(query_result))
+        .catch(err => {
+            res.json(makeResponse([]));
+            console.log(err);
+        });
 });
 
 app.use('/getSalesExpenditure', (req, res) => {
     db.runPredefinedQuery("getSalesExpenditure", [])
-    .then(query_result => res.json(query_result))
-    .catch(err=> {
-        res.json(makeResponse([]));
-        console.log(err);
-    });
+        .then(query_result => res.json(query_result))
+        .catch(err => {
+            res.json(makeResponse([]));
+            console.log(err);
+        });
 });
 
 app.use('/getSalesPerAuthor', (req, res) => {
     db.runPredefinedQuery("getSalesPerAuthor", [])
-    .then(query_result => res.json(query_result))
-    .catch(err=> {
-        res.json(makeResponse([]));
-        console.log(err);
-    });
+        .then(query_result => res.json(query_result))
+        .catch(err => {
+            res.json(makeResponse([]));
+            console.log(err);
+        });
 });
 
 

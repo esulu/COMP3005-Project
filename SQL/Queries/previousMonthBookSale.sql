@@ -2,7 +2,7 @@
 -- https://stackoverflow.com/questions/37587910/get-data-for-previous-month-in-postgresql
 -- Gets the previous month's sale quantity for a book given an isbn
 -- param $1 - isbn
-SELECT isbn, SUM(quantity)
+SELECT isbn, SUM(quantity) as order_amount
 FROM orders
 NATURAL JOIN cart
 NATURAL JOIN contains

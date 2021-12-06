@@ -1,3 +1,6 @@
+-- Purpose: A trigger is created to inform a publisher of the number of books to order 
+--			when the book stock falls below a set threshold of 10 books
+
 -- Report to the publisher the number of books to order 
 CREATE FUNCTION update_quantity()
 	RETURNS trigger

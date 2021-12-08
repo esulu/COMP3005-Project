@@ -1,4 +1,4 @@
---- gets the order date, adddress and shipping company and status of order
+--- gets the order date, adddress and shipping company and status of a specific order
 --- params $1 - the order_id
 
 SELECT order_date, order_address, company_name, status

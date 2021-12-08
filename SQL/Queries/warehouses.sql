@@ -1,1 +1,3 @@
-SELECT * FROM warehouse
+-- Gets everything from the warehouse
+SELECT *
+FROM warehouse

@@ -1,2 +1,3 @@
 -- Retrieve all author information
-SELECT * FROM author;
+SELECT * 
+FROM author;

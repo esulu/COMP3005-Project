@@ -1,1 +1,3 @@
-SELECT DISTINCT ISBN FROM book;
+-- Gets all distinct isbns available in our bookstore.
+SELECT DISTINCT ISBN 
+FROM book;

@@ -1,2 +1,3 @@
--- Retrieve all the publisher 
-SELECT * FROM publisher;
+-- Retrieve all the publisher information
+SELECT *
+FROM publisher;

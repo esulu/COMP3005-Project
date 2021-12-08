@@ -74,20 +74,6 @@ function getBooleanParameter(parameter: any, defaultValue: boolean): boolean {
 // Routes
 // -------------------------------------------------------------------------------------
 
-app.get('/authors', (req, res) => {
-
-    let limit = getIntParameter(req.query.limit, 10000);
-    let offset = getIntParameter(req.query.offset, 0);
-    db.runPredefinedQuery("authors", [limit, offset])
-        .then(query_result => {
-            res.json(query_result)
-        })
-        .catch(error => {
-            console.log(error.message);
-            res.json(makeResponse([]));
-        });
-});
-
 interface BooksType {
     price: number,
     year: number,

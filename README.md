@@ -12,7 +12,7 @@ Look Inna Book online bookstore application for COMP 3005 at Carleton University
 - Clone the repository
 - Download and install pgAdmin and postgresql 
 - Create a relational database named bookstore
-- Run the `DDL.sql`,  `populate.sql`, and `views.sql` files to create the tables/views and populate it with sample data
+- Run the `DDL.sql`,  `populate.sql`, `views.sql` and `trigger.sql` files to create the tables/views and populate it with sample data
 - Update the credentials in the top of `server/source/db.ts` to connect to your local database
 - cd into the `server/source` directory and use `npm install` and `npm run dev` to start the db server
 - create a new terminal

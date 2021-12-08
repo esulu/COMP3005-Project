@@ -1,5 +1,5 @@
 import random
-
+import datetime
 import requests
 import urllib.parse
 import json
@@ -29,6 +29,8 @@ fake_addresses = [
     "7175 Arlington Street",
     "Selkirk, MB R1A 9G4", "100 Pennington Drive", "Saint-Félicien, QC G8K 9L2"
 ]
+
+fake_addresses = [address.replace(',', '').replace('\'', '').replace('\"','') for address in fake_addresses]
 """
 # https://randommer.io/random-email-address
 fake_emails = [
@@ -47,6 +49,8 @@ fake_emails = [
 ]
 """
 fake_emails = ["@gmail.com", "@yahoo.com", "@outlook.com"]
+fake_company_name = ["Intact Courier", "Econofast Shipping", "Canada Post", "USPS", "Fedex"]
+fake_status = ["Received", "In Transit", "Delivered"]
 fopen = open('populate.ddl', 'w')
 
 
@@ -70,6 +74,7 @@ warehouse_key = 100000
 author_key_map = {}
 init_author_key = 50000
 isbns = set()
+cart_ids = []
 
 
 def get_publisher_key(publisher: str) -> int:
@@ -113,7 +118,11 @@ written_by_ddl = []
 author_ddl = []
 publisher_ddl = []
 inst_phone_ddl = []
-
+cart_ddl = []
+contain_ddl = []
+user_ddl = ""
+shipping_ddl = []
+order_ddl = []
 k = 0
 
 for book in bookTitles:
@@ -140,26 +149,29 @@ for book in bookTitles:
         isbn = random.randint(1000000000, 9999999999)
     isbns.add(isbn)
 
-    title = book.replace('\'',"\'\'")
+    title = book.replace('\'',"\'\'").replace('(' , '- ').replace(')', '')
+
     if '-' in json_book['publishedDate']:
         year = json_book['publishedDate'][:json_book['publishedDate'].find('-')]
     else:
         year = json_book['publishedDate']
 
     genre = json_book['categories'][0]
+    if 'pageCount' not in json_book: #bad book
+        continue
     page_count = json_book['pageCount']
-    publisher = json_book['publisher']
+    publisher = json_book['publisher'].replace('\'', '')
     url = json_book['imageLinks']['thumbnail']
 
     quantity = random.randint(10, 50)
 
     # Extract sales related data
     price = json_sales['listPrice']['amount']
-    commission = clamp((price - json_sales['retailPrice']['amount']) / 150, 0.01, 0.5)
+    commission = clamp((price - json_sales['retailPrice']['amount']) / 50, 0.01, 0.5)
 
     # Create the ddl statements
     book_ddl.append(f"INSERT INTO book VALUES(\'{isbn}\', \'{title}\', {year}, \'{genre}\', {page_count}, {price}, {commission},"
-                    f" \'{url}\', {quantity}, {warehouse_key}, {get_publisher_key(publisher)});\n")
+                    f" \'{url}\', {quantity}, {warehouse_key}, {get_publisher_key(publisher)}, true);\n")
 
     for author in json_book['authors']:
         author_id = get_author_key(author)
@@ -167,7 +179,7 @@ for book in bookTitles:
         written_by_ddl.append(f"INSERT INTO written_by VALUES(\'{isbn}\', {author_id});\n")
 
     # (for now), this makes the creation of ddls stop after ~20 books
-    if k == 20:
+    if k == 100:
         break
     k += 1
 
@@ -194,6 +206,39 @@ for publisher_key_pair in publisher_key_map.items():
     publisher_ddl.append(f"INSERT INTO publisher VALUES({publisher_id}, \'{name}\', \'{address}\', \'{email}\', \'{bank_number}\');\n")
     inst_phone_ddl.append(f"INSERT INTO inst_phone VALUES({publisher_id}, \'{phone_number}\');\n")
 
+#date
+today = datetime.datetime.today()
+date_list = [today - datetime.timedelta(days = x+1)for x in range(60)] #range (1) days = 1 days ago
+
+#create cart, create contain, insert to ddl defult 1-10
+cart_end = 31
+for cart_ID in range(1,cart_end):       #cart_ID is 1-9 apply as the numbers on function keys, applied in contain_ddl, shipping_ddl and order_ddl
+    cart_ddl.append(f"INSERT INTO cart VALUES({cart_ID});\n")
+    cart_ids.append(cart_ID)
+    for i in random.sample(isbns,random.randrange(1,6)):
+        contain_ddl.append (f"INSERT INTO contains VALUES(\'{i}\',{cart_ID},{random.randrange(1, 5)});\n")
+    shipping_ddl.append(f"INSERT INTO shipping VALUES({cart_ID}, \'{random.choice(fake_company_name)}\',\'{random.choice(fake_status)}\',{warehouse_key});\n")
+    order_ddl.append(f"INSERT INTO orders VALUES({cart_ID}, \'{random.choice(date_list)}\', \'{random.choice(fake_addresses)}\',\'{random.randint(10000000, 99999999)}\', {cart_ID},{random.randrange(1,6)},{cart_ID});\n")
+for cart_ID in range(cart_end,cart_end+5):# empty carts for 5 fake users
+    cart_ddl.append(f"INSERT INTO cart VALUES({cart_ID});\n")
+#create users manually 
+user_ddl = (f"INSERT INTO users VALUES(1, {cart_end}, 'esulu', 'pass', 'Eren Sulutas', 'eren@email.com', '123 Alexandria Way', false);\n"
+            f"INSERT INTO users VALUES(2, {cart_end+1}, 'ben', '1234', 'ishappy', 'ben@email.com', '456 Admin Road', false);\n"
+            f"INSERT INTO users VALUES(3, {cart_end+2}, 'josh', '1234', 'cl', 'josh@email.com', '763 Glendale Ave', false);\n"
+            f"INSERT INTO users VALUES(4, {cart_end+3}, 'admin', 'admin', 'admin', 'admin@email.com', '456 Admin Road', true);\n"
+            f"INSERT INTO users VALUES(5, {cart_end+4}, 'bbbb', '1234', 'BBB', 'BBB@email.com', '868 Poor House Street', false);\n"
+            )
+#create shipping_id 1-9, idk warehouse_ID 
+#for shipping_ID in range (1,10):
+    
+
+#create orders_id 1-9 order_date is 2 month ago, 
+
+#for order_ID in range (1,10):
+    
+
+
+
 # Output all ddls to the file
 fopen.write(f"INSERT INTO warehouse VALUES({warehouse_key}, \'457 East Ave. Northbrook IL 60062\');\n")
 for ddl in publisher_ddl:
@@ -206,5 +251,14 @@ for ddl in book_ddl:
     fopen.write(ddl)
 for ddl in written_by_ddl:
     fopen.write(ddl)
-
+for ddl in cart_ddl:
+    fopen.write(ddl)
+for ddl in contain_ddl:
+    fopen.write(ddl)
+for ddl in user_ddl:
+    fopen.write(ddl)
+for ddl in shipping_ddl:
+    fopen.write(ddl)
+for ddl in order_ddl:
+    fopen.write(ddl)
 fopen.close()

@@ -46,7 +46,7 @@ export const StatisticsSalersPerGenre = () => {
 
         // make label the genre, and push the data to the dataset
         for (let genreSales of jsonData.rows) {
-            newChartData.labels.push(genreSales.genre);
+            newChartData.labels.push(genreSales.genre + ` (${parseInt(genreSales.sales)})`);
             newDataSet.data.push(genreSales.sales);
             newDataSet.backgroundColor.push(`rgba(${_.random(255, true)}, ${_.random(255, true)}, ${_.random(255, true)}, 0.5)`);
         }
@@ -64,7 +64,7 @@ export const StatisticsSalersPerGenre = () => {
         <>
             {chartData && <div className="chart-container mx-auto" style={{position: 'relative', height:'70vh', width:'80vw'}}>
                     <Typography variant="h5" align="center" style={{textDecorationLine: 'underline'}}> Sales Per Genre </Typography>
-                    <PolarArea options={{maintainAspectRatio: false}}data={chartData}></PolarArea>
+                    <PolarArea options={{maintainAspectRatio: false}} data={chartData}></PolarArea>
                 </div>}  
         </>
     )

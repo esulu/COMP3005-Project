@@ -149,14 +149,14 @@ for book in bookTitles:
         isbn = random.randint(1000000000, 9999999999)
     isbns.add(isbn)
 
-    title = book.replace('\'',"\'\'").replace('(' , '- ').replace(')', '')
+    title = book.replace('\'',"\'\'").replace('(' , '- ').replace(')', '').replace('#', '')
 
     if '-' in json_book['publishedDate']:
         year = json_book['publishedDate'][:json_book['publishedDate'].find('-')]
     else:
         year = json_book['publishedDate']
 
-    genre = json_book['categories'][0]
+    genre = json_book['categories'][0].replace('&', 'and')
     if 'pageCount' not in json_book: #bad book
         continue
     page_count = json_book['pageCount']
